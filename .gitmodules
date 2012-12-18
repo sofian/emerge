@@ -1,0 +1,9 @@
+[submodule "emergeData"]
+	path = emergeData
+	url = git@github.com:sofian/emergeData.git
+[submodule "influence"]
+	path = influence
+	url = https://github.com/radarsat1/influence.git
+[submodule "libmapper"]
+	path = libmapper
+	url = https://github.com/radarsat1/libmapper.git
