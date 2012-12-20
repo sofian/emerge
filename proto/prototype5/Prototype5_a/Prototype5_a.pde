@@ -43,7 +43,7 @@ final String CONTROLLER_OSC_IP = "127.0.0.1";
 final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 
-QualiaOsc osc;
+EmergeQualiaOsc osc;
 
 World    world;
 volatile boolean started = true;
@@ -59,7 +59,7 @@ void setup() {
   world.setEdges();
   world.setGravity(0, 0); // no x,y gravity
 
-  osc = new QualiaOsc(CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, new EmergeEnvironmentManager(world));
+  osc = new EmergeQualiaOsc(CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, new EmergeEnvironmentManager(world));
   
   //world.addThing(theDonut);
   
@@ -85,6 +85,12 @@ void draw() {
     try {
       world.step();
       world.draw();
+      /*
+      for (int i=0; i<osc.getManager().nInstances(); i++) {
+        EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
+        osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
+      }*/
+      
     } catch (ConcurrentModificationException e) {
       for(;;) {
         try {

@@ -36,6 +36,10 @@ class World extends FWorld {
     things.remove(t);
   }
   
+  Vector<Thing> getThings() {
+    return things;
+  }
+  
   float getHeatAt(float x, float y) {
     x = constrain(x, 0, WINDOW_WIDTH-1);
     y = constrain(y, 0, WINDOW_HEIGHT-1);

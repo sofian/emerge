@@ -73,6 +73,7 @@ class QualiaOsc {
   }
   
   void qualiaInit(int id) {
+    println("Qualia init: " + id);
     manager.get(id).init();
     OscMessage message = new OscMessage("/qualia/response/init/" + id);
     sendOsc(message);

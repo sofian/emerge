@@ -6,6 +6,8 @@ class EmergeEnvironment extends QualiaEnvironment {
     this.munchkin = munchkin;
   }
   
+  QualiaOscMunchkin getMunchkin() { return munchkin; }
+  
   void init() {
   }
   
