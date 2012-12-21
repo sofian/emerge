@@ -57,8 +57,21 @@ class World extends FWorld {
   }
   
   void step() {
-
-    super.step();
+    try {
+      super.step();
+    } catch (ArrayIndexOutOfBoundsException e) {
+      println("----------- Thing stopped working -----------");
+      println(e);
+      e.printStackTrace();
+      
+      // dump data
+      for (Thing t : things) {
+        if (Double.isNaN(t.getForceX()) || Double.isNaN(t.getForceY())) {
+          println("Bad force");
+          t.resetForces();
+        }
+      }
+    }
     
     heatMap.beginDraw();
     Collections.sort(things);
@@ -85,7 +98,7 @@ class World extends FWorld {
     for (Thing t : things) {
       
       t.step(this);
-      
+
       final int HEAT_MAP_GRADIENT_STEPS = 10;
       final float HEAT_MAP_GRADIENT_FACTOR = 1.0f / HEAT_MAP_GRADIENT_STEPS;
       float heat      = t.getHeat();
@@ -172,7 +185,8 @@ class World extends FWorld {
   void draw() {
     background(backgroundColor);
     //heatMap.blendMode(BLEND);
-    image(heatMap, 0, 0);
+    
+    //image(heatMap, 0, 0);
     donut.draw();
     super.draw();
   }

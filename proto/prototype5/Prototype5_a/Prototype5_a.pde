@@ -3,10 +3,10 @@ import oscP5.*;
 import netP5.*;
 import java.util.*;
 
-final int WINDOW_WIDTH  = 1280;
-final int WINDOW_HEIGHT = 768;
-//final int WINDOW_WIDTH  = 640;
-//final int WINDOW_HEIGHT = 480;
+//final int WINDOW_WIDTH  = 1280;
+//final int WINDOW_HEIGHT = 768;
+final int WINDOW_WIDTH  = 640;
+final int WINDOW_HEIGHT = 480;
 
 final int FRAME_RATE = 30;
 final float ACTION_RADIUS_FACTOR = 2.0f;
@@ -38,20 +38,28 @@ final float DONUT_HEAT_INCREASE = 0.2f;
 
 final int CONTROLLER_OSC_PORT        = 12000;
 final int CONTROLLER_OSC_REMOTE_PORT = 11000;
+final int BRUNO_OSC_REMOTE_PORT      = 10000;
 final String CONTROLLER_OSC_IP = "127.0.0.1";
+final String BRUNO_OSC_IP      = "127.0.0.1";
+//final String BRUNO_OSC_IP      = "192.168.123.208";
 
 final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 
-EmergeQualiaOsc osc;
+QualiaOsc osc;
 
 World    world;
 volatile boolean started = true;
+
+int cursorX = mouseX;
+int cursorY = mouseY;
+boolean cursorAction = false;
 
 void setup() {
   // NOTE: We can't use P2D because we need to make a loadPixels() in the World class and it makes everything very slow.
   size(WINDOW_WIDTH, WINDOW_HEIGHT, P2D);
   noCursor();
+  frameRate(30);
   
   Fisica.init(this);
   
@@ -59,7 +67,7 @@ void setup() {
   world.setEdges();
   world.setGravity(0, 0); // no x,y gravity
 
-  osc = new EmergeQualiaOsc(CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, new EmergeEnvironmentManager(world));
+  osc = new QualiaOsc(CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, BRUNO_OSC_REMOTE_PORT, BRUNO_OSC_IP, new EmergeEnvironmentManager(world));
   
   //world.addThing(theDonut);
   
@@ -85,12 +93,10 @@ void draw() {
     try {
       world.step();
       world.draw();
-      /*
       for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
-      }*/
-      
+      }
     } catch (ConcurrentModificationException e) {
       for(;;) {
         try {
@@ -103,6 +109,7 @@ void draw() {
     }
     catch (ArrayIndexOutOfBoundsException e) {
       println(e);
+      e.printStackTrace();
     }
   }
 }
@@ -122,7 +129,16 @@ void circleGradient(PGraphics g, int x, int y, int size, float min, float max, f
   }
 }
 
+void mouseMoved() {
+  cursorX = mouseX;
+  cursorY = mouseY;
+}
 
-void mousePressed() {
-  
+void mouseDragged() {
+  cursorAction = true;
+  mouseMoved();
+}
+
+void mouseReleased() {
+  cursorAction = false;
 }

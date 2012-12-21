@@ -48,13 +48,19 @@ class QualiaOsc {
   
   OscP5 oscP5;
   NetAddress remoteLocation;
+  
+  NetAddress brunoRemoteLocation;
+  
   QualiaEnvironmentManager manager;
 
-  QualiaOsc(int port, int remotePort, String ip, QualiaEnvironmentManager manager) {
+  public QualiaOsc(int port, int remotePort, String ip, int brunoRemotePort, String brunoIp, QualiaEnvironmentManager manager) {
+    println(port + " " + remotePort + " " + ip);
     oscP5 = new OscP5(this, port);
     remoteLocation = new NetAddress(ip, remotePort);
+    brunoRemoteLocation = new NetAddress(brunoIp, brunoRemotePort);
     
-    //oscP5.plug(this, "qualiaCreate", "/qualia/create");
+    oscP5.plug(this, "emergeDonutXY",     "/donut/1/xy");
+    oscP5.plug(this, "emergeDonutAction", "/donut/1/action");
     //oscP5.plug(this, "qualiaInit",   "/qualia/init");
     //oscP5.plug(this, "qualiaStart",  "/qualia/start");
     //oscP5.plug(this, "qualiaStep",   "/qualia/step");
@@ -64,6 +70,31 @@ class QualiaOsc {
   
   QualiaEnvironmentManager getManager() { return manager; }
 
+  // NOTE: This should have been in EmergeQualiaOsc but the super() call doesn't work and I don't know why.
+  void emergeSendMunchkinInfo(int id, Munchkin m) {
+    OscBundle bundle = new OscBundle();
+
+    OscMessage msgXY = new OscMessage("/munchkin/" + id + "/xy");
+    msgXY.add(m.x()/width);
+    msgXY.add(m.y()/height);
+    bundle.add(msgXY);
+    
+    OscMessage msgSize = new OscMessage("/munchkin/" + id + "/size");
+    msgSize.add(m.size());
+    bundle.add(msgSize);
+
+    OscMessage msgHeat = new OscMessage("/munchkin/" + id + "/heat");
+    msgHeat.add(m.getHeat());
+    bundle.add(msgHeat);
+    
+    oscP5.send(bundle, brunoRemoteLocation);
+  }
+
+  public void emergeDonutXY(float x, float y) {
+    cursorX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
+    cursorY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
+  }
+  
   public void qualiaCreate(int agentId, int observationDim, int actionDim) {
     manager.create(agentId, observationDim, actionDim);
     /*

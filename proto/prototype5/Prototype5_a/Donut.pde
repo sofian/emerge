@@ -11,8 +11,8 @@ class Donut {
   void draw() {
     ellipseMode(CENTER);
     noStroke();
-    fill(color(0, 0, 255, mousePressed ? 100 : 50));
+    fill(color(0, 0, 255, cursorAction ? 100 : 50));
     smooth();
-    ellipse(mouseX, mouseY, size, size);
+    ellipse(cursorX, cursorY, size, size);
   }
 }

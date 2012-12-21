@@ -4,7 +4,7 @@ class Munchkin extends Thing {
   int size;
   
   Munchkin(int nation, float x, float y, float size, float heat) {
-    super(x, y, size, heat);
+    super(nation, x, y, size, heat);
     this.nation = nation;
     setFillColor(getColor());
   }
@@ -59,15 +59,19 @@ class Munchkin extends Thing {
     setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
   }
   
-  Vector<Thing> getNeighbors(World world) {
-    return world.getThingsInArea(x(), y(), getActionRadius());
+  Vector<Thing> getNeighbors(World world, float radius) {
+    Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
+//    try {
+//    things.removeElement(this);
+//    } catch (NoSuchElementException e) {}
+    return things;
   }
 
   void step(World world)
   {
     resetForces();
     
-    Vector<Thing> neighbors = getNeighbors(world);
+    Vector<Thing> neighbors = getNeighbors(world, getActionRadius());
 
     float neighborsStrength = 0;
     for (Thing n : neighbors) {
@@ -108,6 +112,7 @@ class Munchkin extends Thing {
     setHeat(newHeat);
     setSize(newSize);
     Munchkin kid = new Munchkin(nation, constrain(x(), 10, width-10), constrain(y(), 10, height-10), newSize, newHeat);
+    println("FUCK!!!");
     addForce( xInc*2000, yInc*2000 );
     kid.addForce( -xInc*2000, -yInc*2000 );
     return kid;

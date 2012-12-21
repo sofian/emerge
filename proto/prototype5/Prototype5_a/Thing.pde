@@ -6,13 +6,15 @@ abstract class Thing extends FCircle implements Comparable<Thing> {
   static final int WHITE = -1;
   
   static final int N_NATIONS = 3;
+  
+  int nation;
 
   private float heat;
 
-  Thing(float x, float y, float size, float heat) {
+  Thing(int nation, float x, float y, float size, float heat) {
     super(size);
     setPosition(x, y);
-    setDamping(5.0f);
+    setDamping(10.0f);
     
 //    setDamping(BOT_DAMPING);
 //    setAngularDamping(BOT_ANGULAR_DAMPING);
@@ -24,6 +26,7 @@ abstract class Thing extends FCircle implements Comparable<Thing> {
     setDensity(1);
     setFillColor(getColor());
     setHeat(heat);
+    this.nation = nation;
   }
 
   void eat(Thing o) {
@@ -38,16 +41,10 @@ abstract class Thing extends FCircle implements Comparable<Thing> {
     }
   }
   
-  int getPreyNationOf(int nation) {
-    return (nation + 1) % N_NATIONS;
-  }
-  
-  int getPredatorNationOf(int nation) {
-    return (nation + N_NATIONS - 1) % N_NATIONS;
-  }
-
   void draw(processing.core.PGraphics applet) {
-    applet.fill(ACTION_COLOR);
+    color c = nationToColor(nation);
+    c = color( red(c), green(c), blue(c), 50);
+    applet.fill(c);
     applet.noStroke();
     applet.ellipse(x(), y(), getActionRadius()*2, getActionRadius()*2);
     setFillColor(getColor());
@@ -91,5 +88,9 @@ abstract class Thing extends FCircle implements Comparable<Thing> {
   public int compareTo(Thing o) {
     return (int) (size() - o.size());
   }
-
+  
+  public String toString() {
+    return x() + " " + y() + " " + getForceX() + " " + getForceY();
+  }
+  
 }
