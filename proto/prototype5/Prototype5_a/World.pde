@@ -78,19 +78,19 @@ class World extends FWorld {
     Collections.reverse(things); // sort from biggest to smallest
 
     // Add the heat from the donut.
-    if (mousePressed) {
-      Vector<Thing> affectedThings = getThingsInArea(mouseX, mouseY, donut.size()/2);
+    if (cursorAction) {
+      Vector<Thing> affectedThings = getThingsInArea(cursorX, cursorY, donut.size()/2);
       for (Thing t : affectedThings) {
         t.setHeat(t.getHeat() + DONUT_HEAT_INCREASE);
       }
       heatMap.fill(DONUT_HEAT_INCREASE, HEAT_MAP_SPREAD_FACTOR);
-      heatMap.ellipse(mouseX, mouseY, donut.size(), donut.size());
-      //circleGradient(heatMap, mouseX, mouseY, donut.size(), 0, 1.0f, DONUT_HEAT_INCREASE);
+      heatMap.ellipse(cursorX, cursorY, donut.size(), donut.size());
+      //circleGradient(heatMap, cursorX, cursorY, donut.size(), 0, 1.0f, DONUT_HEAT_INCREASE);
       /*
       heatMap.blendMode(ADD);
       heatMap.fill(1.0f, DONUT_HEAT_INCREASE);
-      heatMap.ellipse(mouseX, mouseY, donut.size(), donut.size());
-      heatMap.ellipse(mouseX, mouseY, donut.size()/2, donut.size()/2);*/
+      heatMap.ellipse(cursorX, cursorY, donut.size(), donut.size());
+      heatMap.ellipse(cursorX, cursorY, donut.size()/2, donut.size()/2);*/
     }
     
     heatMap.loadPixels();

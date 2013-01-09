@@ -8,7 +8,7 @@ import java.util.*;
 final int WINDOW_WIDTH  = 640;
 final int WINDOW_HEIGHT = 480;
 
-final int FRAME_RATE = 30;
+final int FRAME_RATE = 60; // was 30
 final float ACTION_RADIUS_FACTOR = 2.0f;
 final float ACTION_RADIUS_BASE   = 20.0f;
 final int ACTION_COLOR = color(100, 50, 50, 100);
@@ -53,7 +53,7 @@ volatile boolean started = true;
 
 int cursorX = mouseX;
 int cursorY = mouseY;
-boolean cursorAction = false;
+boolean cursorAction = true;
 
 void setup() {
   // NOTE: We can't use P2D because we need to make a loadPixels() in the World class and it makes everything very slow.
@@ -135,10 +135,10 @@ void mouseMoved() {
 }
 
 void mouseDragged() {
-  cursorAction = true;
+  //cursorAction = true;
   mouseMoved();
 }
 
 void mouseReleased() {
-  cursorAction = false;
+  //cursorAction = false;
 }
