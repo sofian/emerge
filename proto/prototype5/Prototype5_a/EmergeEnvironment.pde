@@ -1,4 +1,4 @@
-﻿class EmergeEnvironment extends QualiaEnvironment {
+class EmergeEnvironment extends QualiaEnvironment {
   QualiaOscMunchkin munchkin;
 
   EmergeEnvironment(int id, int observationDim, int actionDim, QualiaOscMunchkin munchkin) {
