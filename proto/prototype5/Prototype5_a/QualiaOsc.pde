@@ -59,7 +59,7 @@ class QualiaOsc {
     remoteLocation = new NetAddress(ip, remotePort);
     brunoRemoteLocation = new NetAddress(brunoIp, brunoRemotePort);
     
-    oscP5.plug(this, "emergeDonutXY",     "/donut/1/xy");
+    oscP5.plug(this, "emergeDonutXY",     "/donut/xy");
     oscP5.plug(this, "emergeDonutAction", "/donut/1/action");
     //oscP5.plug(this, "qualiaInit",   "/qualia/init");
     //oscP5.plug(this, "qualiaStart",  "/qualia/start");
@@ -72,27 +72,21 @@ class QualiaOsc {
 
   // NOTE: This should have been in EmergeQualiaOsc but the super() call doesn't work and I don't know why.
   void emergeSendMunchkinInfo(int id, Munchkin m) {
-    OscBundle bundle = new OscBundle();
-
-    OscMessage msgXY = new OscMessage("/munchkin/" + id + "/xy");
-    msgXY.add(m.x()/width);
-    msgXY.add(m.y()/height);
-    bundle.add(msgXY);
-    
-    OscMessage msgSize = new OscMessage("/munchkin/" + id + "/size");
-    msgSize.add(m.size());
-    bundle.add(msgSize);
-
-    OscMessage msgHeat = new OscMessage("/munchkin/" + id + "/heat");
-    msgHeat.add(m.getHeat());
-    bundle.add(msgHeat);
-    
-    oscP5.send(bundle, brunoRemoteLocation);
+    OscMessage msg = new OscMessage("/munchkin");
+    msg.add(id);
+    msg.add(m.x()/width);
+    msg.add(m.y()/height);
+    msg.add(m.size());
+    msg.add(m.getHeat());
+    oscP5.send(msg, brunoRemoteLocation);
   }
 
-  public void emergeDonutXY(float x, float y) {
-    cursorX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
-    cursorY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
+  public void emergeDonutXY(int ID, float x, float y) {
+    int newX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
+    int newY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
+    Donut thisDonut = (Donut)world.donuts.get(ID);
+    thisDonut.setPosition(newX, newY);
+    //println("New position for donut " + ID + ": X=" + newX + " Y=" + newY + " (" + x + " " + y + ")");
   }
   
   public void qualiaCreate(int agentId, int observationDim, int actionDim) {

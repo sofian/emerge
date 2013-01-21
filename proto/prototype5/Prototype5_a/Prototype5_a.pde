@@ -35,6 +35,7 @@ final float HEAT_DECREASE = 0.0001f;
 final float HEAT_DECREASE_ON_ACTION = 0.0001f;
 
 final float DONUT_HEAT_INCREASE = 0.2f;
+final int N_DONUTS = 216;
 
 final int CONTROLLER_OSC_PORT        = 12000;
 final int CONTROLLER_OSC_REMOTE_PORT = 11000;
@@ -51,8 +52,6 @@ QualiaOsc osc;
 World    world;
 volatile boolean started = true;
 
-int cursorX = mouseX;
-int cursorY = mouseY;
 boolean cursorAction = true;
 
 void setup() {
@@ -68,9 +67,7 @@ void setup() {
   world.setGravity(0, 0); // no x,y gravity
 
   osc = new QualiaOsc(CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, BRUNO_OSC_REMOTE_PORT, BRUNO_OSC_IP, new EmergeEnvironmentManager(world));
-  
-  //world.addThing(theDonut);
-  
+    
   int n = Munchkin.RED;
   for (int i=0; i<N_MUNCHKINS; i++) {
     world.addThing(new Munchkin(Munchkin.RED,   (int)random(0,width), (int)random(0,height), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT));
@@ -129,16 +126,16 @@ void circleGradient(PGraphics g, int x, int y, int size, float min, float max, f
   }
 }
 
+// The mouse controls the donut with ID 0
 void mouseMoved() {
-  cursorX = mouseX;
-  cursorY = mouseY;
+  float mouseXNorm = (float)mouseX / WINDOW_WIDTH;
+  float mouseYNorm = (float)mouseY / WINDOW_HEIGHT;
+  osc.emergeDonutXY(0, mouseXNorm, mouseYNorm);
 }
 
 void mouseDragged() {
-  //cursorAction = true;
   mouseMoved();
 }
 
 void mouseReleased() {
-  //cursorAction = false;
 }
