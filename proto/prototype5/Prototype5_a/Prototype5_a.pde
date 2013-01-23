@@ -81,7 +81,27 @@ void setup() {
   }
   
   try {
-    Thread.sleep(1000);
+    Thread.sleep(3000);
+  } catch (InterruptedException e) {
+    println(e);
+  }
+  
+  // Wait for init().
+  try {
+    while (!osc.getManager().allMarked()) Thread.sleep(100);
+    println("Init done");
+    osc.getManager().unmarkAll();
+    for (int i=0; i<osc.getManager().nInstances(); i++) {
+      osc.sendResponseInit(i);
+    }
+  
+    // Wait for start().
+    while (!osc.getManager().allMarked()) Thread.sleep(100);
+    println("Start done");
+    osc.getManager().unmarkAll();
+    for (int i=0; i<osc.getManager().nInstances(); i++) {
+      osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
+    }
   } catch (InterruptedException e) {
     println(e);
   }
@@ -91,13 +111,28 @@ void draw() {
   synchronized (world) {
     //background(#000000);
     if (!started) return;
+
+    try {
+      while (!osc.getManager().allMarked()) Thread.sleep(100);
+      println("Step done");
+      osc.getManager().unmarkAll();
+    } catch (InterruptedException e) {
+      println(e);
+    }
+
     try {
       world.step();
       world.draw();
+      
       for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
+
+      for (int i=0; i<osc.getManager().nInstances(); i++) {
+        osc.sendResponseStep(i, osc.getManager().get(i).getObservation());
+      }
+      
     } catch (ConcurrentModificationException e) {
       for(;;) {
         try {
@@ -107,8 +142,7 @@ void draw() {
         }
         break;
       }
-    }
-    catch (ArrayIndexOutOfBoundsException e) {
+    } catch (ArrayIndexOutOfBoundsException e) {
       println(e);
       e.printStackTrace();
     }

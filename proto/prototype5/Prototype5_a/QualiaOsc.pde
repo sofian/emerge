@@ -5,19 +5,30 @@ abstract class QualiaEnvironment {
   int observationDim;
   int actionDim;
   
+  boolean flag;
+  
   QualiaEnvironment(int id, int observationDim, int actionDim) {
     this.id = id;
     this.observationDim = observationDim;
     this.actionDim = actionDim;
+    this.flag = false;
   }
   
   int getId() { return id; }
   int getObservationDim() { return observationDim; }
   int getActionDim() { return actionDim; }
   
+  boolean marked() { return flag; }
+  void mark()   { flag = true;  }
+  void unmark() { flag = false; }
+  
   abstract void init();
-  abstract float[] start();
-  abstract float[] step(int[] action);
+  
+  abstract void start();
+  
+  abstract void step(int[] action);
+  
+  abstract float[] getObservation();
 }
 
 abstract class QualiaEnvironmentManager {
@@ -36,6 +47,41 @@ abstract class QualiaEnvironmentManager {
   
   QualiaEnvironment get(int id) {
     return instances.get(new Integer(id));
+  }
+  
+  boolean allMarked() {
+    for (QualiaEnvironment e : instances.values()) {
+      if (!e.marked())
+        return false;
+    }
+    return true;
+  }
+  
+  void unmarkAll() {
+    for (QualiaEnvironment e : instances.values())
+      e.unmark();
+  }
+  
+  void init(int id) {
+    QualiaEnvironment e = get(id);
+    e.mark();
+    e.init();
+  }
+  
+  void start(int id) {
+    QualiaEnvironment e = get(id);
+    e.mark();
+    e.start();
+  }
+  
+  void step(int id, int[] action) {
+    QualiaEnvironment e = get(id);
+    e.mark();
+    e.step(action);
+  }
+  
+  float[] getObservation(int id) {
+    return get(id).getObservation();
   }
   
   int nInstances() { return instances.size(); }
@@ -97,35 +143,39 @@ class QualiaOsc {
   
   public void qualiaCreate(int agentId, int observationDim, int actionDim) {
     manager.create(agentId, observationDim, actionDim);
-    /*
-    OscMessage message = new OscMessage("/qualia/response/create/" + agentId);
-    message.add(id); // id
-    sendOsc(message);*/
+//    OscMessage message = new OscMessage("/qualia/response/create/" + agentId);
+//    sendOsc(message);
   }
   
-  void qualiaInit(int id) {
-    println("Qualia init: " + id);
-    manager.get(id).init();
+  void sendResponseInit(int id) {
     OscMessage message = new OscMessage("/qualia/response/init/" + id);
     sendOsc(message);
+  }
+  
+  void sendResponseStart(int id, float[] obs) {
+    OscMessage message = new OscMessage("/qualia/response/start/" + id);
+    message.add(obs);     // observation
+    sendOsc(message);
+  }
+
+  void sendResponseStep(int id, float[] obs) {
+    OscMessage message = new OscMessage("/qualia/response/step/" + id);
+    message.add(obs);     // observation
+    sendOsc(message);
+  }
+
+  void qualiaInit(int id) {
+    println("Qualia init: " + id);
+    manager.init(id);
   }
 
   void qualiaStart(int id) {
     println("Qualia start: " + id);
-    float[] obs = manager.get(id).start();
-    println("Observations to return: " + obs);
-    OscMessage message = new OscMessage("/qualia/response/start/" + id);
-//    message.add(agentId); // id
-    message.add(obs);     // observation
-    sendOsc(message);
+    manager.start(id);
   }
 
   void qualiaStep(int id, int[] action) {
-    float[] obs = manager.get(id).step(action);
-    OscMessage message = new OscMessage("/qualia/response/step/" + id);
- //   message.add(agentId); // id
-    message.add(obs);     // observation
-    sendOsc(message);
+    manager.step(id, action);
   }
 
   void sendOsc(OscPacket packet) {
