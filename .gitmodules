@@ -7,3 +7,6 @@
 [submodule "libmapper"]
 	path = libmapper
 	url = https://github.com/radarsat1/libmapper.git
+[submodule "webmapper"]
+	path = webmapper
+	url = git://github.com/radarsat1/webmapper.git
