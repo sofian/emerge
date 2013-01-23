@@ -16,13 +16,11 @@ class EmergeEnvironment extends QualiaEnvironment {
   }
   
   float[] step(int[] action) {
-//    if (id % 3 == 0) println(id + " -> (" + action[0] + "," + action[1] + ")");
-    munchkin.addMoveForce(map((float)action[0], 0, N_ACTIONS_XY-1, -1., +1.),
-                          map((float)action[1], 0, N_ACTIONS_XY-1, -1., +1.));
-//    println("----");
-//    println(munchkin.getObservation());
-
-    println(munchkin.getObservation());
+    if (id % 3 == 0) println(id + " -> (" + action[0] + "," + action[1] + ")");
+    float fx = map((float)action[0], 0, N_ACTIONS_XY-1, -1., +1.);
+    float fy = map((float)action[1], 0, N_ACTIONS_XY-1, -1., +1.);
+    munchkin.addMoveForce(fx, fy);
+    println( (munchkin.getNation() == Thing.RED ? "red" : "blue") + " := (" + fx + "," + fy + ") -> " +   munchkin.getReward());
     return munchkin.getObservation();
   }
   
