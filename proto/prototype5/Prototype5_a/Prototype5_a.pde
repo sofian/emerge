@@ -43,7 +43,8 @@ final String CONTROLLER_OSC_IP = "127.0.0.1";
 final String BRUNO_OSC_IP      = "127.0.0.1";
 //final String BRUNO_OSC_IP      = "192.168.123.208";
 
-final int N_ACTIONS_XY = 100;
+final int N_ACTIONS_XY = 3;
+//final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 
 QualiaOsc osc;
