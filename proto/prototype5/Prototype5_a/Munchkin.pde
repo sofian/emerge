@@ -1,26 +1,39 @@
-class Munchkin extends Thing {
-  
+// ******************************************************************
+// This class represent a reinforcement learning agent, aka a munchkin.
+// ******************************************************************
+class Munchkin extends Thing
+{
   int nation;
   int size;
   
-  Munchkin(int nation, float x, float y, float size, float heat) {
+  // ============================================
+  // Constructors
+  // ============================================
+  Munchkin(int nation, float x, float y, float size, float heat)
+  {
     super(nation, x, y, size, heat);
     this.nation = nation;
     setFillColor(getColor());
   }
 
-  Munchkin(int nation, float x, float y, float size) {
+  Munchkin(int nation, float x, float y, float size)
+  {
     this(nation, x, y, size, 0.5f);
   }
   
-  Munchkin(int nation, float x, float y) {
+  Munchkin(int nation, float x, float y)
+  {
     this(nation, x, y, 1, 0.5f);
   }
-
+  
+  // ============================================
+  // Setters & getters
+  // ============================================  
   // Implement abstract methods.
   int getNation() { return nation; }
   
-  int getColor() {
+  int getColor()
+  {
     float h = getHeat();
     colorMode(RGB);
     int high = #ff0000;
@@ -32,13 +45,23 @@ class Munchkin extends Thing {
     colorMode(RGB);
     return col;
   }
-
-//  int size() { return this.size; }
-//  int x() { return (int)this.x; }
-//  int y() { return (int)this.y; }
   
-  void eat(Thing o) {
-    if (!o.isDead()) {
+  Vector<Thing> getNeighbors(Booth booth, float radius)
+  {
+    Vector<Thing> things =  booth.getThingsInArea(x(), y(), radius);
+//    try {
+//    things.removeElement(this);
+//    } catch (NoSuchElementException e) {}
+    return things;
+  }
+  
+  // ============================================
+  // Member functions
+  // ============================================ 
+  void eat(Thing o)
+  {
+    if (!o.isDead())
+    {
       // Size transfer.
       setSize(getSize() + 1);
       o.setSize(o.getSize() - 1);
@@ -49,7 +72,8 @@ class Munchkin extends Thing {
     }
   }
   
-  void move(World world) {
+  void move(Booth booth)
+  {
     // Move.
     float RANDOM_FORCE_STRENGTH = getHeat() * 100.0f;
     float fx = random(-RANDOM_FORCE_STRENGTH,RANDOM_FORCE_STRENGTH);
@@ -58,23 +82,15 @@ class Munchkin extends Thing {
     float forceStrength = sqrt(fx*fx + fy*fy);
     setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
   }
-  
-  Vector<Thing> getNeighbors(World world, float radius) {
-    Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
-//    try {
-//    things.removeElement(this);
-//    } catch (NoSuchElementException e) {}
-    return things;
-  }
 
-  void step(World world)
+  void step(Booth booth)
   {
-    resetForces();
-    
-    Vector<Thing> neighbors = getNeighbors(world, getActionRadius());
+    resetForces();    
+    Vector<Thing> neighbors = getNeighbors(booth, getActionRadius());
 
     float neighborsStrength = 0;
-    for (Thing n : neighbors) {
+    for (Thing n : neighbors)
+    {
       if (n == this) continue;
       neighborsStrength += n.size();
 
@@ -85,23 +101,28 @@ class Munchkin extends Thing {
       addForce( (n.x() - x()) / d * g, (n.y() - y()) / d * g );
     }
     
-    if (neighborsStrength > size()) { // they eat me!
+    if (neighborsStrength > size())
+    { // they eat me!
       neighborsStrength -= size();
       Iterator<Thing> it = neighbors.iterator();
-      while (it.hasNext() && neighborsStrength > 0) {
+      while (it.hasNext() && neighborsStrength > 0)
+      {
         Thing n = it.next();
         neighborsStrength -= n.size();
         n.eat(this);
       }
     }
     else
+    {
       eat(neighbors.firstElement());
+    }
     
-    move(world);
+    move(booth);
   }
 
   // Extra methods.
-  Munchkin split() {
+  Munchkin split()
+  {
     float angle = random(0, 2*PI);
     float newSize = floor(size()/2);
     int xInc = (int) (cos(angle)*newSize/2);
@@ -119,17 +140,23 @@ class Munchkin extends Thing {
   }
 
   /*
-  void draw() {
+  void draw()
+  {
     ellipseMode(CENTER);
     noStroke();
     fill(getColor());
     stroke(getColor());
     if (size == 0)
+    {
       println("This thing should be dead.");
-    else if (size == 1) {
+    }
+    else if (size == 1)
+    {
       noSmooth();
       point(x, y);
-    } else {
+    }
+    else
+    {
       smooth();
       ellipse(x, y, size, size);
     }
@@ -137,7 +164,8 @@ class Munchkin extends Thing {
 
   // Extra methods.
   /*
-  Munchkin split() {
+  Munchkin split()
+  {
     float angle = random(0, 2*PI);
     int newSize = size/2;
     int xInc = (int) (cos(angle)*size*2);
