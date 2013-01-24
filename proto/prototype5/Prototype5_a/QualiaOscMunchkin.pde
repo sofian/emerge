@@ -34,12 +34,13 @@ class QualiaOscMunchkin extends Munchkin {
     if (Double.isNaN(getForceX()) || Double.isNaN(getForceY()))
       resetForces();
 
-    float heatFactor = getHeat() * getHeat() * 10;
-    //print("FX FY : " + fx + " " + fy + " " + + heatFactor);
+    float heatFactor = getHeat() * getHeat();
+//    println("FX FY : " + fx + " " + fy + " " + + heatFactor);
     fx *= heatFactor;
     fy *= heatFactor;
     //println("  --- > " + fx + " " + fy);
     addForce(fx, fy);
+    addForce( random(-fx/2, fx/2), random(-fy/2, fy/2) ); // add some noise
     //println(this);
     float forceStrength = sqrt(fx*fx + fy*fy);
     setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
@@ -107,22 +108,36 @@ class QualiaOscMunchkin extends Munchkin {
   float getReward() {
     float baseReward = 0;
     
-    if (x() < 10 || x() >= width-10 || y() < 10 || y() >= height-10)
-      baseReward -= 100; // bad, very bad!
+    // Absolute localization: try to avoid borders and occupy center ///////////////////////////////////////////////////////
+    
+    // Avoid borders at all costs
+    int tooCloseToBorder = max(width/10, 10);
+    if (x() < tooCloseToBorder || x() >= width-tooCloseToBorder || y() < tooCloseToBorder || y() >= height-tooCloseToBorder) {
+      baseReward -= 1000; // bad, very bad!
+    }
 
     float distCenter = distance(x(), y(), width/2, height/2); // distance to center
     float dist01 = distance(x(), y(), width/2, height/2) / (width/2); // distance to center remapped to 01
     
+    // Stay close to center.
     if (dist01 > 0.5)
-      baseReward += -(1+10*dist01);
+      baseReward -= ( 0.1 + dist01);
     else
-      baseReward += +10*(1-dist01);
-                       
+      baseReward += +(1 - dist01);
+    
+    // Center zone is delightful.
+    if (distCenter < 2*tooCloseToBorder)
+      baseReward += 10;
+    
+    /////////////// RESET
+    //baseReward = 0.5 - dist01;
+    
     if (nation == Thing.RED)
       return baseReward;
-      else if (nation == Thing.BLUE)
+    else if (nation == Thing.BLUE)
       return -baseReward;
-      
+    
+    
     switch (nation) {
 
       // Predators.
@@ -151,17 +166,18 @@ class QualiaOscMunchkin extends Munchkin {
   
   float[] getObservation() {
     return new float[] {
-      x()/width,
-      y()/height,
+//      x(),
+//      y(),
+      map(x(), 0.0f, (float)width, -1., 1.),
+      map(y(), 0.0f, (float)height, -1., 1.),
       getVelocityX() /100,
       getVelocityY() /100,
-      size()/30,
+/*      size()/30,
       getHeat(),
       xClosest,
       yClosest,
       heatClosest,
-      sizeClosest/30,
-      
+      sizeClosest/30,*/
       getReward()
     };
   }
