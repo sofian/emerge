@@ -93,16 +93,18 @@ abstract class QualiaEnvironmentManager {
 class QualiaOsc {
   
   OscP5 oscP5;
-  NetAddress remoteLocation;
+  Vector<NetAddress> remoteLocation;
   
   NetAddress brunoRemoteLocation;
   
   QualiaEnvironmentManager manager;
 
-  public QualiaOsc(int port, int remotePort, String ip, int brunoRemotePort, String brunoIp, QualiaEnvironmentManager manager) {
+  public QualiaOsc(int maxAgents, int port, int remotePort, String ip, int brunoRemotePort, String brunoIp, QualiaEnvironmentManager manager) {
     println(port + " " + remotePort + " " + ip);
     oscP5 = new OscP5(this, port);
-    remoteLocation = new NetAddress(ip, remotePort);
+    remoteLocation = new Vector<NetAddress>();
+    for (int i=0; i<maxAgents; i++)
+      remoteLocation.add(new NetAddress(ip, remotePort+i));
     brunoRemoteLocation = new NetAddress(brunoIp, brunoRemotePort);
     
     oscP5.plug(this, "emergeDonutXY",     "/donut/1/xy");
@@ -179,7 +181,8 @@ class QualiaOsc {
   }
 
   void sendOsc(OscPacket packet) {
-    oscP5.send(packet, remoteLocation);
+    for (NetAddress loc: remoteLocation)
+      oscP5.send(packet, loc);
   }
   
   int extractId(OscMessage msg, String startPath) {
@@ -188,6 +191,10 @@ class QualiaOsc {
   
   void oscEvent(OscMessage msg) {
     String pattern = msg.addrPattern();
+//    println(pattern);
+//    msg.print();
+//    msg.printData();
+
     if (pattern.equals("/qualia/create")) {
       qualiaCreate(msg.get(0).intValue(), msg.get(1).intValue(), msg.get(2).intValue());
     }
@@ -201,10 +208,15 @@ class QualiaOsc {
     }
     
     else if (pattern.startsWith("/qualia/step")) {
+//      println("qualia step");
       int id = extractId(msg, "/qualia/step");
+//      println(manager.get(id).getActionDim());
       int[] action = new int[manager.get(id).getActionDim()];
-      for (int i=0; i<action.length; i++)
+//      println(msg.arguments().length);
+      for (int i=0; i<action.length; i++) {
         action[i] = msg.get(i).intValue();
+      }
+//      println("COCO");
       qualiaStep(id, action);
     }
     /* with theOscMessage.isPlugged() you check if the osc message has already been

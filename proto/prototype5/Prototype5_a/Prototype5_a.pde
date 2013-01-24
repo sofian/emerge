@@ -31,8 +31,10 @@ final float HEAT_TRACE_SIZE_FACTOR = 5.0f;
 // Heat decrease factors.
 //final float HEAT_MAP_DECREASE_FACTOR = 0.05f;
 final float HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
-final float HEAT_DECREASE = 0.0001f;
-final float HEAT_DECREASE_ON_ACTION = 0.0001f;
+final float HEAT_DECREASE = 0;
+//final float HEAT_DECREASE = 0.0001f;
+final float HEAT_DECREASE_ON_ACTION = 0;
+//final float HEAT_DECREASE_ON_ACTION = 0.0001f;
 
 final float DONUT_HEAT_INCREASE = 0.2f;
 
@@ -47,6 +49,8 @@ final int N_ACTIONS_XY = 3;
 //final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 
+final int MAX_N_AGENTS = 100;
+
 QualiaOsc osc;
 
 World    world;
@@ -60,7 +64,7 @@ void setup() {
   // NOTE: We can't use P2D because we need to make a loadPixels() in the World class and it makes everything very slow.
   size(WINDOW_WIDTH, WINDOW_HEIGHT, P2D);
   noCursor();
-  frameRate(30);
+  frameRate(FRAME_RATE);
   
   Fisica.init(this);
   
@@ -68,7 +72,7 @@ void setup() {
   world.setEdges();
   world.setGravity(0, 0); // no x,y gravity
 
-  osc = new QualiaOsc(CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, BRUNO_OSC_REMOTE_PORT, BRUNO_OSC_IP, new EmergeEnvironmentManager(world));
+  osc = new QualiaOsc(MAX_N_AGENTS, CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, BRUNO_OSC_REMOTE_PORT, BRUNO_OSC_IP, new EmergeEnvironmentManager(world));
   
   //world.addThing(theDonut);
   
