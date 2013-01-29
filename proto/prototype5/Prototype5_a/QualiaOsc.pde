@@ -165,7 +165,7 @@ class QualiaOsc {
     message.add(obs);     // observation
     sendOsc(message);
   }
-
+  
   void qualiaInit(int id) {
     println("Qualia init: " + id);
     manager.init(id);
@@ -179,6 +179,49 @@ class QualiaOsc {
   void qualiaStep(int id, int[] action) {
     manager.step(id, action);
   }
+  
+  // Controlled agent
+  void sendAgentResponseInit(int id) {
+    OscMessage message = new OscMessage("/qualia/agent/response/init/" + id);
+    sendOsc(message);
+  }
+  
+  void sendAgentResponseStart(int id, int[] actions) {
+    OscMessage message = new OscMessage("/qualia/agent/response/start/" + id);
+    message.add(actions);     // observation
+    sendOsc(message);
+  }
+
+  void sendAgentResponseStep(int id, int[] actions) {
+    OscMessage message = new OscMessage("/qualia/agent/response/step/" + id);
+    message.add(actions);     // observation
+    sendOsc(message);
+  }
+  
+  void qualiaAgentInit(int id) {
+    println("Qualia init: " + id);
+    if (id != 0) {
+      println("Agent controls only work for id=0");
+    }
+    sendAgentResponseInit(id);
+//    manager.init(id);
+  }
+
+  void qualiaAgentStart(int id, float[] observation) {
+    println("Qualia start: " + id);
+    if (id != 0) {
+      println("Agent controls only work for id=0");
+    }
+    sendAgentResponseStart(id, humanControlledAction);
+  }
+
+  void qualiaAgentStep(int id, float[] observation) {
+    if (id != 0) {
+      println("Agent controls only work for id=0");
+    }
+    sendAgentResponseStep(id, humanControlledAction);
+  }
+
 
   void sendOsc(OscPacket packet) {
     for (NetAddress loc: remoteLocation)
@@ -219,6 +262,37 @@ class QualiaOsc {
 //      println("COCO");
       qualiaStep(id, action);
     }
+
+    else if (pattern.startsWith("/qualia/agent/init")) {
+      qualiaAgentInit(extractId(msg, "/qualia/agent/init"));
+    }
+    
+    else if (pattern.startsWith("/qualia/agent/start")) {
+//      println("qualia step");
+      int id = extractId(msg, "/qualia/agent/start");
+//      println(manager.get(id).getActionDim());
+      float[] observation = new float[manager.get(id).getObservationDim()];
+//      println(msg.arguments().length);
+      for (int i=0; i<observation.length; i++) {
+        observation[i] = msg.get(i).floatValue();
+      }
+//      println("COCO");
+      qualiaAgentStart(id, observation);
+    }
+    
+    else if (pattern.startsWith("/qualia/agent/step")) {
+//      println("qualia step");
+      int id = extractId(msg, "/qualia/agent/step");
+//      println(manager.get(id).getActionDim());
+      float[] observation = new float[manager.get(id).getObservationDim()];
+//      println(msg.arguments().length);
+      for (int i=0; i<observation.length; i++) {
+        observation[i] = msg.get(i).floatValue();
+      }
+//      println("COCO");
+      qualiaAgentStep(id, observation);
+    }
+
     /* with theOscMessage.isPlugged() you check if the osc message has already been
      * forwarded to a plugged method. if theOscMessage.isPlugged()==true, it has already 
      * been forwared to another method in your sketch. theOscMessage.isPlugged() can 

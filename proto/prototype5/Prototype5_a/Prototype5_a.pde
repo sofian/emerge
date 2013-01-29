@@ -51,6 +51,9 @@ final float ACTION_FORCE_FACTOR = 100.0f;
 
 final int MAX_N_AGENTS = 100;
 
+final boolean HUMAN_CONTROLLED_AGENT = false;
+int[] humanControlledAction = new int[2];
+
 QualiaOsc osc;
 
 World    world;
@@ -181,4 +184,22 @@ void mouseDragged() {
 
 void mouseReleased() {
   cursorAction = false;
+}
+void keyPressed() {
+  if (HUMAN_CONTROLLED_AGENT) {
+    int x = humanControlledAction[0];
+    int y = humanControlledAction[1];
+    if (key == CODED) {
+      switch (keyCode) {
+        case LEFT:  x--; break;
+        case RIGHT: x++; break;
+        case UP:    y--; break;
+        case DOWN:  y++; break;
+      }
+    }
+    x = constrain(x, -N_ACTIONS_XY/2, +N_ACTIONS_XY/2+1);
+    y = constrain(y, -N_ACTIONS_XY/2, +N_ACTIONS_XY/2+1);
+    humanControlledAction[0] = x;
+    humanControlledAction[1] = y;
+  }
 }

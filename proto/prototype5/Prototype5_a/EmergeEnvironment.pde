@@ -29,10 +29,13 @@ class EmergeEnvironment extends QualiaEnvironment {
 }
 
 class EmergeEnvironmentManager extends QualiaEnvironmentManager {
+  
   World world;
+  
   EmergeEnvironmentManager(World world) {
     this.world = world;
   }
+  
   QualiaEnvironment _doCreate(int id, int observationDim, int actionDim) {
     QualiaOscMunchkin munchkin;
     if (id % 2 == 0)
@@ -40,6 +43,7 @@ class EmergeEnvironmentManager extends QualiaEnvironmentManager {
     else
       munchkin = new QualiaOscMunchkin(Thing.BLUE, (int)random(width/2,width-50), (int)random(50,height-50), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT);
     world.addThing(munchkin);
+  
     return new EmergeEnvironment(id, observationDim, actionDim, munchkin);
   }
 }

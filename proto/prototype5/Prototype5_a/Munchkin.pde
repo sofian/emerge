@@ -112,7 +112,6 @@ class Munchkin extends Thing {
     setHeat(newHeat);
     setSize(newSize);
     Munchkin kid = new Munchkin(nation, constrain(x(), 10, width-10), constrain(y(), 10, height-10), newSize, newHeat);
-    println("FUCK!!!");
     addForce( xInc*2000, yInc*2000 );
     kid.addForce( -xInc*2000, -yInc*2000 );
     return kid;
