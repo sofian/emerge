@@ -62,7 +62,8 @@ boolean cursorAction = false;
 
 void setup() {
   // NOTE: We can't use P2D because we need to make a loadPixels() in the World class and it makes everything very slow.
-  size(WINDOW_WIDTH, WINDOW_HEIGHT, P2D);
+  size(WINDOW_WIDTH, WINDOW_HEIGHT);
+  //size(WINDOW_WIDTH, WINDOW_HEIGHT, P2D);
   noCursor();
   frameRate(FRAME_RATE);
   
