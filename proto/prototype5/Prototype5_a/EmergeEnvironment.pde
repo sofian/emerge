@@ -1,14 +1,29 @@
-class EmergeEnvironment extends QualiaEnvironment {
+// ******************************************************************
+// This class implements an environment, as observable by an agent.
+// ******************************************************************
+class EmergeEnvironment extends QualiaEnvironment
+{
   QualiaOscMunchkin munchkin;
 
-  EmergeEnvironment(int id, int observationDim, int actionDim, QualiaOscMunchkin munchkin) {
+  // ============================================
+  // Constructor
+  // ============================================
+  EmergeEnvironment(int id, int observationDim, int actionDim, QualiaOscMunchkin munchkin)
+  {
     super(id, observationDim, actionDim);
     this.munchkin = munchkin;
-  }
+  }  
   
+  // ============================================
+  // Setters & getters
+  // ============================================  
   QualiaOscMunchkin getMunchkin() { return munchkin; }
   
-  void init() {
+  // ============================================
+  // Member functions
+  // ============================================ 
+  void init()
+  {
   }
   
   void start() {
@@ -28,19 +43,36 @@ class EmergeEnvironment extends QualiaEnvironment {
   
 }
 
-class EmergeEnvironmentManager extends QualiaEnvironmentManager {
+// ******************************************************************
+// This class handles the creation of two types of agents: predator and prey
+// ******************************************************************
+class EmergeEnvironmentManager extends QualiaEnvironmentManager
+{
+  HashMap<Integer, Booth> booths;
   
   World world;
-  
+
+  // ============================================
+  // Constructor
+  // ============================================
   EmergeEnvironmentManager(World world) {
     this.world = world;
   }
   
-  QualiaEnvironment _doCreate(int id, int observationDim, int actionDim) {
+  // ============================================
+  // Member functions
+  // ============================================
+  QualiaEnvironment _doCreate(int id, int observationDim, int actionDim)
+  {
     QualiaOscMunchkin munchkin;
     if (id % 2 == 0)
+    {
+      // Even munchkins have one behaviour
       munchkin = new QualiaOscMunchkin(Thing.RED, (int)random(50,width/2), (int)random(50,height-50), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT);
+    }
     else
+    {
+      // Odd munchkins have another behaviour
       munchkin = new QualiaOscMunchkin(Thing.BLUE, (int)random(width/2,width-50), (int)random(50,height-50), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT);
     world.addThing(munchkin);
   
