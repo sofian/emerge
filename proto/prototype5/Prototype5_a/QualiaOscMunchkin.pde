@@ -1,163 +1,70 @@
-// ******************************************************************
-// This class represent an environment, as observable by an agent.
-// ******************************************************************
-class QualiaOscMunchkin extends Munchkin
-{
+class QualiaOscMunchkin extends Munchkin {
+
   float fx;
-  float fy;  
+  float fy;
+  
   float xHeat;
   float yHeat;
   float xSize;
-  float ySize;  
+  float ySize;
+  
   float xClosest;
   float yClosest;
   float heatClosest;
   float sizeClosest;
-  boolean hasClosest = false;  
+  boolean hasClosest = false;
+  
   boolean hasEaten = false;
   boolean wasEaten = false;
   
-  // ============================================
-  // Constructors
-  // ============================================
-  QualiaOscMunchkin(int nation, float x, float y, float size, float heat)
-  {
+  QualiaOscMunchkin(int nation, float x, float y, float size, float heat) {
     super(nation, x, y, size, heat);
   }
 
-  QualiaOscMunchkin(int nation, float x, float y, float size)
-  {
+  QualiaOscMunchkin(int nation, float x, float y, float size) {
     super(nation, x, y, size);
   }
   
-  QualiaOscMunchkin(int nation, float x, float y)
-  {
+  QualiaOscMunchkin(int nation, float x, float y) {
     super(nation, x, y);
   }
-  
-  // ============================================
-  // Setters & getters
-  // ============================================  
-  float getReward()
-  {
-    float baseReward = 0;
-    
-    if (x() < 10 || x() >= width-10 || y() < 10 || y() >= height-10)
-    {
-      baseReward -= 100; // bad, very bad!
-    }
 
-    float distCenter = distance(x(), y(), width/2, height/2); // distance to center
-    float dist01 = distance(x(), y(), width/2, height/2) / (width/2); // distance to center remapped to 01
-    
-    if (dist01 > 0.5)
-    {
-      baseReward += -(1+10*dist01);
-    }
-    else
-    {
-      baseReward += +10*(1-dist01);
-    }
-                       
-    if (nation == Thing.RED)
-    {
-      return baseReward;
-    }
-    else if (nation == Thing.BLUE)
-    {
-      return -baseReward;
-    }
-      
-    switch (nation)
-    {
-      // Predators.
-      case Thing.RED:
-        return baseReward
-               + (hasClosest ? size() - sizeClosest : -10)  // happy to be close to a smaller sized munchkin
-               + 10*(hasEaten ? 1+getSize() : 0);           // happy when it eats
-//        return baseReward + getSize() + (xHeat*xHeat + yHeat*yHeat) + (hasEaten ? 100 : 0); // predators
-      
-      // Preys.
-      case Thing.BLUE:
-        return baseReward 
-               + (hasClosest ? -sizeClosest : 10)           // unhappy to be close to munchkin, especially big ones / happy to be alone
-               + (wasEaten ? -100 : 0);                     // unhappy when eaten
-//        return baseReward - (getSize() < 2 ? 100 : 0) - sqrt(xSize*xSize + ySize*ySize) + (wasEaten ? -100 : 0); // preys
-
-      default:
-        return baseReward 
-               + 10*getHeat()
-               + getSize()
-               + abs(getVelocityX()) + abs(getVelocityY()); // like to move
-//            + (xHeat*xHeat + yHeat*yHeat) // attracted by heat
-//            - sqrt(xSize*xSize + ySize*ySize); // repelled by size
-    }
-  }
-  
-  float[] getObservation()
-  {
-    return new float[] {
-      x()/width,
-      y()/height,
-      getVelocityX() /100,
-      getVelocityY() /100,
-      size()/30,
-      getHeat(),
-      xClosest,
-      yClosest,
-      heatClosest,
-      sizeClosest/30,      
-      getReward()
-    };
-  }
-
-  // ============================================
-  // Member functions
-  // ============================================ 
-  void move(Booth booth)
-  {
+  void move(World world) {
     // IMPORTANT: KEEP THESE LINES AS IS: THERE IS AN ISSUE WITH THE FORCES GETTING TO NAN IN SOME UNKNOWN CIRCUMSTANCES; THIS FIXES IT
     if (Double.isNaN(getForceX()) || Double.isNaN(getForceY()))
-    {
       resetForces();
-    }
 
-    float heatFactor = getHeat() * getHeat() * 10;
-    //print("FX FY : " + fx + " " + fy + " " + + heatFactor);
+    float heatFactor = getHeat() * getHeat();
+//    println("FX FY : " + fx + " " + fy + " " + + heatFactor);
     fx *= heatFactor;
     fy *= heatFactor;
     //println("  --- > " + fx + " " + fy);
     addForce(fx, fy);
+    addForce( random(-fx/2, fx/2), random(-fy/2, fy/2) ); // add some noise
     //println(this);
     float forceStrength = sqrt(fx*fx + fy*fy);
     setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
     resetMoveForce();
   }
   
-  void step(Booth booth)
-  {
+  void step(World world) {
     hasEaten = wasEaten = false;
-    super.step(booth);
+    super.step(world);
     
     float observationRadius = 4 * getActionRadius();
-    Vector<Thing> neighbors = getNeighbors(booth, observationRadius);
+    Vector<Thing> neighbors = getNeighbors(world, observationRadius);
     
-    if (neighbors.size() == 0)
-    {
+    if (neighbors.size() == 0) {
       hasClosest = false;
       xClosest = (random(1.) < 0.5 ? -1 : +1) * observationRadius;
       yClosest = (random(1.) < 0.5 ? -1 : +1) * observationRadius;
       heatClosest = sizeClosest = 0;
-    }
-    else
-    {
+    } else {
       hasClosest = true;
       float dMin = 9999;
-      for (Thing t : neighbors)
-      {
+      for (Thing t : neighbors) {
         float d = distance(x(), y(), t.x(), t.y());
-        if (d < dMin)
-        {
+        if (d < dMin) {
           d = dMin;
           xClosest = t.x() - x();
           yClosest = t.y() - y();
@@ -186,35 +93,104 @@ class QualiaOscMunchkin extends Munchkin
     
     // Increase size every now and then.
     if (random(0.0, 1.0) < 0.1f/(size()*size()+1))
-    {
       setSize(size()+1);
-    }
   }
   
-  void resetMoveForce()
-  {
+  void resetMoveForce() {
     this.fx = this.fy = 0;
   }
   
-  void addMoveForce(float fx, float fy)
-  {
+  void addMoveForce(float fx, float fy) {
     this.fx += fx * ACTION_FORCE_FACTOR;
     this.fy += fy * ACTION_FORCE_FACTOR;
   }
+  
+  float getReward() {
+    float baseReward = 0;
+    
+    // Absolute localization: try to avoid borders and occupy center ///////////////////////////////////////////////////////
+    
+    // Avoid borders at all costs
+    int tooCloseToBorder = max(width/10, 10);
+    if (x() < tooCloseToBorder || x() >= width-tooCloseToBorder || y() < tooCloseToBorder || y() >= height-tooCloseToBorder) {
+      baseReward -= 1000; // bad, very bad!
+    }
 
-  void eat(Thing o)
-  {
+    float distCenter = distance(x(), y(), width/2, height/2); // distance to center
+    float dist01 = distance(x(), y(), width/2, height/2) / (width/2); // distance to center remapped to 01
+    
+    // Stay close to center.
+    if (dist01 > 0.5)
+      baseReward -= ( 0.1 + dist01);
+    else
+      baseReward += +(1 - dist01);
+    
+    // Center zone is delightful.
+    if (distCenter < 2*tooCloseToBorder)
+      baseReward += 10;
+    
+    /////////////// RESET
+    //baseReward = 0.5 - dist01;
+    
+    if (nation == Thing.RED)
+      return baseReward;
+    else if (nation == Thing.BLUE)
+      return -baseReward;
+    
+    
+    switch (nation) {
+
+      // Predators.
+      case Thing.RED:
+        return baseReward
+               + (hasClosest ? size() - sizeClosest : -10)  // happy to be close to a smaller sized munchkin
+               + 10*(hasEaten ? 1+getSize() : 0);           // happy when it eats
+//        return baseReward + getSize() + (xHeat*xHeat + yHeat*yHeat) + (hasEaten ? 100 : 0); // predators
+      
+      // Preys.
+      case Thing.BLUE:
+        return baseReward 
+               + (hasClosest ? -sizeClosest : 10)           // unhappy to be close to munchkin, especially big ones / happy to be alone
+               + (wasEaten ? -100 : 0);                     // unhappy when eaten
+//        return baseReward - (getSize() < 2 ? 100 : 0) - sqrt(xSize*xSize + ySize*ySize) + (wasEaten ? -100 : 0); // preys
+
+      default:
+        return baseReward 
+               + 10*getHeat()
+               + getSize()
+               + abs(getVelocityX()) + abs(getVelocityY()); // like to move
+//            + (xHeat*xHeat + yHeat*yHeat) // attracted by heat
+//            - sqrt(xSize*xSize + ySize*ySize); // repelled by size
+    }
+  }
+  
+  float[] getObservation() {
+    return new float[] {
+//      x(),
+//      y(),
+      map(x(), 0.0f, (float)width, -1., 1.),
+      map(y(), 0.0f, (float)height, -1., 1.),
+      getVelocityX() /100,
+      getVelocityY() /100,
+/*      size()/30,
+      getHeat(),
+      xClosest,
+      yClosest,
+      heatClosest,
+      sizeClosest/30,*/
+      getReward()
+    };
+  }
+
+  void eat(Thing o) {
     super.eat(o);
     if (o instanceof QualiaOscMunchkin)
-    {
       ((QualiaOscMunchkin)o).wasEaten = true;
-    }
     hasEaten = true;
   }
   
   // Extra methods.
-  Munchkin split()
-  {
+  Munchkin split() {
     float newSize = floor(size()/2);
     float newHeat = getHeat() / 2 - HEAT_DECREASE_ON_ACTION;
     float angle = random(0, 2*PI);
@@ -228,5 +204,6 @@ class QualiaOscMunchkin extends Munchkin
     setHeat(newHeat);
     setSize(newSize);
     return null;
-  }  
+  }
+  
 }
