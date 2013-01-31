@@ -43,7 +43,7 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   float size() { return getSize(); }
   float getActionRadius() { return (getSize() * ACTION_RADIUS_FACTOR + ACTION_RADIUS_BASE) / 2; }
   abstract int getNation();
-  abstract void step(Booth booth);  
+  abstract void step(World world);  
   float getHeat() { return heat; }
   void setHeat(float h)
   {

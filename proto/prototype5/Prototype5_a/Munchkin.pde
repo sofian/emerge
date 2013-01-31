@@ -46,9 +46,9 @@ class Munchkin extends Thing
     return col;
   }
   
-  Vector<Thing> getNeighbors(Booth booth, float radius)
+  Vector<Thing> getNeighbors(World world, float radius)
   {
-    Vector<Thing> things =  booth.getThingsInArea(x(), y(), radius);
+    Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
 //    try {
 //    things.removeElement(this);
 //    } catch (NoSuchElementException e) {}
@@ -72,7 +72,7 @@ class Munchkin extends Thing
     }
   }
   
-  void move(Booth booth)
+  void move(World world)
   {
     // Move.
     float RANDOM_FORCE_STRENGTH = getHeat() * 100.0f;
@@ -83,10 +83,10 @@ class Munchkin extends Thing
     setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
   }
 
-  void step(Booth booth)
+  void step(World world)
   {
     resetForces();    
-    Vector<Thing> neighbors = getNeighbors(booth, getActionRadius());
+    Vector<Thing> neighbors = getNeighbors(world, getActionRadius());
 
     float neighborsStrength = 0;
     for (Thing n : neighbors)
@@ -117,7 +117,7 @@ class Munchkin extends Thing
       eat(neighbors.firstElement());
     }
     
-    move(booth);
+    move(world);
   }
 
   // Extra methods.

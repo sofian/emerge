@@ -5,13 +5,13 @@ class World extends FWorld {
   PGraphics heatMap;
 //  PShader blur;
 
-  Donut donut;
+//  Donut donut;
 
   World(color backgroundColor) {
     this.backgroundColor = backgroundColor;
     things = new Vector<Thing>();
     
-    donut = new Donut();
+    //donut = new Donut();
     //blur = loadShader("blur.glsl");
     //blur.set("blurSize", 9);
     //blur.set("sigma", 5.0f);
@@ -78,6 +78,7 @@ class World extends FWorld {
     Collections.reverse(things); // sort from biggest to smallest
 
     // Add the heat from the donut.
+    /*
     if (mousePressed) {
       Vector<Thing> affectedThings = getThingsInArea(mouseX, mouseY, donut.size()/2);
       for (Thing t : affectedThings) {
@@ -86,12 +87,11 @@ class World extends FWorld {
       heatMap.fill(DONUT_HEAT_INCREASE, HEAT_MAP_SPREAD_FACTOR);
       heatMap.ellipse(mouseX, mouseY, donut.size(), donut.size());
       //circleGradient(heatMap, mouseX, mouseY, donut.size(), 0, 1.0f, DONUT_HEAT_INCREASE);
-      /*
-      heatMap.blendMode(ADD);
-      heatMap.fill(1.0f, DONUT_HEAT_INCREASE);
-      heatMap.ellipse(mouseX, mouseY, donut.size(), donut.size());
-      heatMap.ellipse(mouseX, mouseY, donut.size()/2, donut.size()/2);*/
-    }
+      //heatMap.blendMode(ADD);
+      //heatMap.fill(1.0f, DONUT_HEAT_INCREASE);
+      //heatMap.ellipse(mouseX, mouseY, donut.size(), donut.size());
+      //heatMap.ellipse(mouseX, mouseY, donut.size()/2, donut.size()/2);
+    }*/
     
     heatMap.loadPixels();
     
@@ -187,7 +187,7 @@ class World extends FWorld {
     //heatMap.blendMode(BLEND);
     
     //image(heatMap, 0, 0);
-    donut.draw();
+    //donut.draw();
     super.draw();
   }
  

@@ -139,7 +139,7 @@ class QualiaOscMunchkin extends Munchkin
     // Avoid borders at all costs
     int tooCloseToBorder = max(width/10, 10);
     if (x() < tooCloseToBorder || x() >= width-tooCloseToBorder || y() < tooCloseToBorder || y() >= height-tooCloseToBorder) {
-      baseReward -= 1000; // bad, very bad!
+      baseReward -= 10; // bad, very bad!
     }
 
     float distCenter = distance(x(), y(), width/2, height/2); // distance to center

@@ -31,10 +31,10 @@ final float   HEAT_TRACE_SIZE_FACTOR = 5.0f;
 // Heat decrease factors.
 //final float HEAT_MAP_DECREASE_FACTOR = 0.05f;
 final float   HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
-final float   HEAT_DECREASE = 0.0001f;
-final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
-
-final float DONUT_HEAT_INCREASE = 0.2f;
+//final float   HEAT_DECREASE = 0.0001f;
+//final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
+final float   HEAT_DECREASE = 0.0;
+final float   HEAT_DECREASE_ON_ACTION = 0.0;
 
 final int CONTROLLER_OSC_PORT        = 12000;
 final int CONTROLLER_OSC_REMOTE_PORT = 11000;
@@ -85,7 +85,7 @@ void setup()
   }
   
   // Wait for init().
-/*  try {
+  try {
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Init done");
     osc.getManager().unmarkAll();
@@ -102,14 +102,14 @@ void setup()
     }
   } catch (InterruptedException e) {
     println(e);
-  }*/
+  }
 }
 
 void draw() {
+  println(world);
   synchronized (world) {
     //background(#000000);
     if (!started) return;
-
     try {
       while (!osc.getManager().allMarked()) Thread.sleep(100);
       println("Step done");
@@ -121,6 +121,7 @@ void draw() {
     try {
       world.step();
       world.draw();
+
       for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
@@ -177,8 +178,6 @@ void mouseMoved()
 {
   float mouseXNorm = (float)mouseX / WINDOW_WIDTH;
   float mouseYNorm = (float)mouseY / WINDOW_HEIGHT;
-  // The mouse interacts with the first donut in the first booth
-  booths.get(activeBooth).emergeDonutXY(0, mouseXNorm, mouseYNorm);
 }
 
 // ============================================

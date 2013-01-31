@@ -137,12 +137,12 @@ class QualiaOsc {
     
     oscP5.send(bundle, brunoRemoteLocation);
   }
-
+/*
   public void emergeDonutXY(float x, float y) {
     cursorX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
     cursorY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
   }
-  
+  */
   public void qualiaCreate(int agentId, int observationDim, int actionDim) {
     manager.create(agentId, observationDim, actionDim);
 //    OscMessage message = new OscMessage("/qualia/response/create/" + agentId);
