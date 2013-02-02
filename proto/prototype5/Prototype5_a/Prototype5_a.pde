@@ -12,13 +12,6 @@ final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
 final color   WORLD_BACKGROUND_COLOR = #000000;
 
-final int FRAME_RATE = 30;
-final float ACTION_RADIUS_FACTOR = 2.0f;
-final float ACTION_RADIUS_BASE   = 20.0f;
-final int ACTION_COLOR = color(100, 50, 50, 100);
-
-final color WORLD_BACKGROUND_COLOR = #000000;
-
 final int   N_MUNCHKINS = 0;
 final int   MUNCHKIN_INITIAL_SIZE = 5;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
@@ -51,6 +44,8 @@ final String BRUNO_OSC_IP      = "127.0.0.1";
 //final String BRUNO_OSC_IP      = "192.168.123.208";
 
 final int N_ACTIONS_XY = 3;
+final int ACTION_DIM = 2;
+final int OBSERVATION_DIM = 4;
 //final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 
@@ -87,19 +82,54 @@ void setup()
   osc = new QualiaOsc(MAX_N_AGENTS, CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, BRUNO_OSC_REMOTE_PORT, BRUNO_OSC_IP, new EmergeEnvironmentManager(world));
   
   //world.addThing(theDonut);
+    
+  // Launch the Qualia agents
+  for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    String execFullPath;
+    if (platform == WINDOWS)
+      execFullPath = "C:/EMERGE/20130131_Emerge/Emerge_QualiaEmerge_sofian/tests/osc/Release/Qualia.exe";
+    else
+      execFullPath = "/home/tats/Documents/workspace/qualia/tests/osc/build/computer/main";
+    
+    String actionParams = String.valueOf(N_ACTIONS_XY);
+    for (int j=1; j<ACTION_DIM; j++)
+      actionParams += "," + String.valueOf(N_ACTIONS_XY);
+    
+   // String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams,  "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
+    String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
+    println(execParams);
+//    Process p = open(execParams);
+    Process p = open(new String[]{ "/bin/ls", "-l" });
+    try {
+    for (int j=0; j<1000; j++)
+      print((char)p.getErrorStream().read());
+    } catch (IOException e) {
+      println("FDSFSDDS");
+    }
+    println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
+
+    try {
+      Thread.sleep(100);
+    }
+    catch (InterruptedException e) {
+      println(e);
+    }
+  }
   
   try {
     Thread.sleep(5000);
   } catch (InterruptedException e) {
     println(e);
   }
-  
+    
+  // Wait for init and start messages.
   // Wait for init().
   try {
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Init done");
     osc.getManager().unmarkAll();
-    for (int i=0; i<osc.getManager().nInstances(); i++) {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    //for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseInit(i);
     }
   
@@ -107,29 +137,14 @@ void setup()
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Start done");
     osc.getManager().unmarkAll();
-    for (int i=0; i<osc.getManager().nInstances(); i++) {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+//    for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
     }
   } catch (InterruptedException e) {
     println(e);
   }
   
-  // Launch the Qualia agents
-  for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
-    if (platform == WINDOWS)
-    {
-      String[] params = { "C:/EMERGE/20130131_Emerge/Emerge_QualiaEmerge_sofian/tests/osc/Release/Qualia.exe", String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
-      open(params);
-      println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
-
-      try {
-        Thread.sleep(100);
-      }
-      catch (InterruptedException e) {
-        println(e);
-      }
-    }
-  }
 }
 
 // ============================================
@@ -137,9 +152,11 @@ void setup()
 // ============================================
 void draw()
 {
+  println("a");
   synchronized (world)
   {
     //background(#000000);    
+  println("b");
     if (!started) return;
     try
     {
@@ -150,15 +167,19 @@ void draw()
       println(e);
     }
 
+  println("c");
     try {
       world.step();
+  println("d");
       world.draw();
+  println("e");
       
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
       //for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
+  println("f");
 
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
       //for (int i=0; i<osc.getManager().nInstances(); i++) {

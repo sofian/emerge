@@ -76,10 +76,6 @@ abstract class QualiaEnvironmentManager
     return env;
   }
   
-  QualiaEnvironment get(int id) {
-    return instances.get(new Integer(id));
-  }
-  
   boolean allMarked() {
     for (QualiaEnvironment e : instances.values()) {
       if (!e.marked())
@@ -115,9 +111,6 @@ abstract class QualiaEnvironmentManager
     return get(id).getObservation();
   }
   
-  int nInstances() { return instances.size(); }
-  HashMap<Integer, QualiaEnvironment> getInstances() { return instances; }
-  
   abstract QualiaEnvironment _doCreate(int id, int observationDim, int actionDim);
 }
 
@@ -127,14 +120,14 @@ abstract class QualiaEnvironmentManager
 class QualiaOsc
 {  
   OscP5 oscP5;
-  NetAddress remoteLocation;  
+  Vector<NetAddress> remoteLocation;  
   NetAddress brunoRemoteLocation;  
   QualiaEnvironmentManager manager;
 
   // ============================================
   // Constructor
   // ============================================
-  public QualiaOsc(int maxAgents, int port, int remotePort, String ip, int brunoRemotePort, String brunoIp, QualiaEnvironmentManager manager) {
+  public QualiaOsc(int maxAgents, int port, int remotePort, String ip, int brunoRemotePort, String brunoIp, QualiaEnvironmentManager manager)
   {
     println(port + " " + remotePort + " " + ip);
     oscP5 = new OscP5(this, port);

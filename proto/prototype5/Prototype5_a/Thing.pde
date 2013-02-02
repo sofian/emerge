@@ -37,9 +37,6 @@ abstract class Thing extends FCircle implements Comparable<Thing>
     this.nation = nation;
   }
 
-  void eat(Thing o) {
-  }
-  
   // ============================================
   // Setters & getters
   // ============================================  

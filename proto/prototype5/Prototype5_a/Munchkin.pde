@@ -46,15 +46,6 @@ class Munchkin extends Thing
     return col;
   }
   
-  Vector<Thing> getNeighbors(World world, float radius)
-  {
-    Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
-//    try {
-//    things.removeElement(this);
-//    } catch (NoSuchElementException e) {}
-    return things;
-  }
-  
   // ============================================
   // Member functions
   // ============================================ 

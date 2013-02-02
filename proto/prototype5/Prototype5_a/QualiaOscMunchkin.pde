@@ -188,7 +188,7 @@ class QualiaOscMunchkin extends Munchkin
   }
   
   float[] getObservation() {
-    return new float[] {
+    float[] obs = new float[] {
 //      x(),
 //      y(),
       map(x(), 0.0f, (float)width, -1., 1.),
@@ -204,6 +204,12 @@ class QualiaOscMunchkin extends Munchkin
 
       getReward()
     };
+    if (obs.length-1 != OBSERVATION_DIM)
+    {
+      println("Wrong number of observations: " + obs.length);
+      exit();
+    }      
+    return obs;
   }
 
   void eat(Thing o) {
