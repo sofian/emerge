@@ -12,12 +12,18 @@ final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
 final color   WORLD_BACKGROUND_COLOR = #000000;
 
-// Munchkins and donuts
-final int     MUNCHKIN_INITIAL_SIZE = 5;
-final float   MUNCHKIN_INITIAL_HEAT = 0.5f;
-final float   DONUT_HEAT_INCREASE = 0.2f;
-final int     N_DONUTS = 216;
-final int     N_BOOTHS = 5;
+final int FRAME_RATE = 30;
+final float ACTION_RADIUS_FACTOR = 2.0f;
+final float ACTION_RADIUS_BASE   = 20.0f;
+final int ACTION_COLOR = color(100, 50, 50, 100);
+
+final color WORLD_BACKGROUND_COLOR = #000000;
+
+final int   N_MUNCHKINS = 0;
+final int   MUNCHKIN_INITIAL_SIZE = 5;
+final float MUNCHKIN_INITIAL_HEAT = 0.5f;
+final int   N_QUALIA_AGENTS = 12;
+final int   N_DONUTS = 216;
 
 // Heat related
 final int     HEAT_MAP_GRADIENT_STEPS = 10;
@@ -31,13 +37,14 @@ final float   HEAT_TRACE_SIZE_FACTOR = 5.0f;
 // Heat decrease factors.
 //final float HEAT_MAP_DECREASE_FACTOR = 0.05f;
 final float   HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
-//final float   HEAT_DECREASE = 0.0001f;
-//final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
-final float   HEAT_DECREASE = 0.0;
-final float   HEAT_DECREASE_ON_ACTION = 0.0;
+final float   HEAT_DECREASE = 0.0001f;
+final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
-final int CONTROLLER_OSC_PORT        = 12000;
-final int CONTROLLER_OSC_REMOTE_PORT = 11000;
+final float DONUT_HEAT_INCREASE = 0.2f;
+
+final int BOOTHID = 1;
+final int CONTROLLER_OSC_PORT        = 12000 + (BOOTHID-1)*100;
+final int CONTROLLER_OSC_REMOTE_PORT = 11000 + (BOOTHID-1)*100;
 final int BRUNO_OSC_REMOTE_PORT      = 10000;
 final String CONTROLLER_OSC_IP = "127.0.0.1";
 final String BRUNO_OSC_IP      = "127.0.0.1";
@@ -56,6 +63,9 @@ QualiaOsc osc;
 
 World    world;
 volatile boolean started = true;
+
+int cursorX = mouseX;
+int cursorY = mouseY;
 boolean       cursorAction = true;
 
 // ============================================
@@ -103,16 +113,38 @@ void setup()
   } catch (InterruptedException e) {
     println(e);
   }
+  
+  // Launch the Qualia agents
+  for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    if (platform == WINDOWS)
+    {
+      String[] params = { "C:/EMERGE/20130131_Emerge/Emerge_QualiaEmerge_sofian/tests/osc/Release/Qualia.exe", String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
+      open(params);
+      println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
+
+      try {
+        Thread.sleep(100);
+      }
+      catch (InterruptedException e) {
+        println(e);
+      }
+    }
+  }
 }
 
-void draw() {
-  println(world);
-  synchronized (world) {
-    //background(#000000);
+// ============================================
+// Draw
+// ============================================
+void draw()
+{
+  synchronized (world)
+  {
+    //background(#000000);    
     if (!started) return;
-    try {
+    try
+    {
       while (!osc.getManager().allMarked()) Thread.sleep(100);
-      println("Step done");
+      //println("Step done");
       osc.getManager().unmarkAll();
     } catch (InterruptedException e) {
       println(e);
@@ -121,13 +153,15 @@ void draw() {
     try {
       world.step();
       world.draw();
-
-      for (int i=0; i<osc.getManager().nInstances(); i++) {
+      
+      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+      //for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
-      for (int i=0; i<osc.getManager().nInstances(); i++) {
+      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+      //for (int i=0; i<osc.getManager().nInstances(); i++) {
         osc.sendResponseStep(i, osc.getManager().get(i).getObservation());
       }
       
@@ -135,12 +169,16 @@ void draw() {
       for(;;) {
         try {
           Thread.sleep(1000);
-        } catch (InterruptedException e1) {
+        }
+        catch (InterruptedException e1)
+        {
           continue;
         }
         break;
       }
-    } catch (ArrayIndexOutOfBoundsException e) {
+    }
+    catch (ArrayIndexOutOfBoundsException e)
+    {
       println(e);
       e.printStackTrace();
     }
@@ -174,10 +212,9 @@ void circleGradient(PGraphics g, int x, int y, int size, float min, float max, f
 // ============================================
 // The mouse controls the donut with ID 0 in the active booth
 // ============================================
-void mouseMoved()
-{
-  float mouseXNorm = (float)mouseX / WINDOW_WIDTH;
-  float mouseYNorm = (float)mouseY / WINDOW_HEIGHT;
+void mouseMoved() {
+  cursorX = mouseX;
+  cursorY = mouseY;
 }
 
 // ============================================
@@ -185,14 +222,10 @@ void mouseMoved()
 // ============================================
 void mouseDragged()
 {
-  cursorAction = true;
   mouseMoved();
 }
 
-void mouseReleased() {
-  cursorAction = false;
-}
-
+// Change the active booth with the keyboard
 void keyPressed() {
   if (HUMAN_CONTROLLED_AGENT) {
     int x = humanControlledAction[0];
@@ -211,3 +244,26 @@ void keyPressed() {
     humanControlledAction[1] = y;
   }
 }
+
+void killQualia()
+{
+  /*
+  if (platform == WINDOWS)
+  {
+    println("Killing Qualia instances..."); 
+    String[] params = { "taskkill.exe", "/IM", "Qualia.exe", "/F"};
+    open(params);
+  }
+  */
+}
+
+void dispose()
+{
+  killQualia();
+  try {
+    Thread.sleep(500);
+  } catch (InterruptedException e) {
+    println(e);
+  }
+}
+

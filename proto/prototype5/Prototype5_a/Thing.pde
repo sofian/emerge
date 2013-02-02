@@ -8,8 +8,11 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   static final int GREEN = 1;
   static final int BLUE  = 2;
   static final int WHITE = -1;
-  static final int N_NATIONS = 3;  
+  
+  static final int N_NATIONS = 3;
+  
   int nation;
+
   private float heat;
 
   // ============================================
@@ -33,6 +36,9 @@ abstract class Thing extends FCircle implements Comparable<Thing>
     setHeat(heat);
     this.nation = nation;
   }
+
+  void eat(Thing o) {
+  }
   
   // ============================================
   // Setters & getters
@@ -42,8 +48,11 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   float y() { return getY(); }
   float size() { return getSize(); }
   float getActionRadius() { return (getSize() * ACTION_RADIUS_FACTOR + ACTION_RADIUS_BASE) / 2; }
+  
   abstract int getNation();
-  abstract void step(World world);  
+
+  abstract void step(World world);
+  
   float getHeat() { return heat; }
   void setHeat(float h)
   {
