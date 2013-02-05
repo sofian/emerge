@@ -85,12 +85,16 @@ void setup()
   //world.addThing(theDonut);
     
   // Launch the Qualia agents
-  for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+  for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
     String execFullPath;
     if (platform == WINDOWS)
-      execFullPath = "C:/EMERGE/20130131_Emerge/Emerge_QualiaEmerge_sofian/tests/osc/Release/Qualia.exe";
+    {
+      execFullPath = "C:/DEV/funkmeisterb/Qualia/tests/osc/Release/QualiaOSC.exe";
+    }
     else
+    {
       execFullPath = "/home/tats/Documents/workspace/qualia/tests/osc/build/computer/main";
+    }
     
     String actionParams = String.valueOf(N_ACTIONS_XY);
     for (int j=1; j<ACTION_DIM; j++)
@@ -98,14 +102,20 @@ void setup()
     
    // String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams,  "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
     String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
-    println(execParams);
-//    Process p = open(execParams);
-    Process p = open(new String[]{ "/bin/ls", "-l" });
-    try {
-    for (int j=0; j<1000; j++)
-      print((char)p.getErrorStream().read());
-    } catch (IOException e) {
-      println("FDSFSDDS");
+    //println(execParams);
+    if (platform == WINDOWS)
+    {
+Process p = open(execParams);
+    }
+    else
+    {
+      Process p = open(new String[]{ "/bin/ls", "-l" });
+      try {
+      for (int j=0; j<1000; j++)
+        print((char)p.getErrorStream().read());
+      } catch (IOException e) {
+        println("FDSFSDDS");
+      }
     }
     println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
 
@@ -129,7 +139,7 @@ void setup()
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Init done");
     osc.getManager().unmarkAll();
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
     //for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseInit(i);
     }
@@ -138,7 +148,7 @@ void setup()
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Start done");
     osc.getManager().unmarkAll();
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
 //    for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
     }
@@ -170,13 +180,13 @@ void draw()
       world.step();
       world.draw();
       
-      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
       //for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
-      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
       //for (int i=0; i<osc.getManager().nInstances(); i++) {
         osc.sendResponseStep(i, osc.getManager().get(i).getObservation());
       }
