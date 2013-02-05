@@ -1,9 +1,16 @@
-class Donut {  
+// ******************************************************************
+// This class represents a user-controlled agent, aka a donut.
+// ******************************************************************
+class Donut
+{  
   int ID;
   int size;
   int posX;
   int posY;
   
+  // ============================================
+  // Constructor
+  // ============================================
   Donut(int id)
   {
     ID = id;
@@ -13,6 +20,9 @@ class Donut {
     posY = -200;
   }
   
+  // ============================================
+  // Setters & getters
+  // ============================================  
   int size() { return size; }
   
   void setPosition(int x, int y)
@@ -21,7 +31,11 @@ class Donut {
     posY = y;
   }
   
-  void draw() {
+  // ============================================
+  // Member functions
+  // ============================================ 
+  void draw()
+  {
     ellipseMode(CENTER);
     noStroke();
     fill(color(0, 0, 255, cursorAction ? 100 : 50));

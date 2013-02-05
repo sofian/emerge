@@ -13,7 +13,7 @@ class QualiaOscMunchkin extends Munchkin
   float yClosest;
   float heatClosest;
   float sizeClosest;
-  boolean hasClosest = false;  
+  boolean hasClosest = false;
   boolean hasEaten = false;
   boolean wasEaten = false;
   

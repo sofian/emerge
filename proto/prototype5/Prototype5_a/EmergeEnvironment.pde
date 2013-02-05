@@ -12,13 +12,15 @@ class EmergeEnvironment extends QualiaEnvironment
   {
     super(id, observationDim, actionDim);
     this.munchkin = munchkin;
-  }  
+  }
   
   // ============================================
   // Setters & getters
   // ============================================  
   QualiaOscMunchkin getMunchkin() { return munchkin; }
   
+  float[] getObservation() { return munchkin.getObservation(); }
+
   // ============================================
   // Member functions
   // ============================================ 
@@ -29,18 +31,14 @@ class EmergeEnvironment extends QualiaEnvironment
   void start() {
   }
   
-  void step(int[] action) {
+  void step(int[] action)
+  {
     if (id % 3 == 0) println(id + " -> (" + action[0] + "," + action[1] + ")");
     float fx = map((float)action[0], 0, N_ACTIONS_XY-1, -1., +1.);
     float fy = map((float)action[1], 0, N_ACTIONS_XY-1, -1., +1.);
     munchkin.addMoveForce(fx, fy);
     println( (munchkin.getNation() == Thing.RED ? "red" : "blue") + " := (" + fx + "," + fy + ") -> " +   munchkin.getReward());
   }
-  
-  float[] getObservation() {
-    return munchkin.getObservation();
-  }
-  
 }
 
 // ******************************************************************
@@ -74,6 +72,7 @@ class EmergeEnvironmentManager extends QualiaEnvironmentManager
       munchkin = new QualiaOscMunchkin(Thing.BLUE, (int)random(width/2,width-50), (int)random(50,height-50), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT);
     }
     world.addThing(munchkin);
+    println("Created munchking with ID " + id + " in booth " + activeBooth);
   
     return new EmergeEnvironment(id, observationDim, actionDim, munchkin);
   }

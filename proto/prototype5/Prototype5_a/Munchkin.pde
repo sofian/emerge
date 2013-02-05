@@ -46,6 +46,15 @@ class Munchkin extends Thing
     return col;
   }
   
+  Vector<Thing> getNeighbors(World world, float radius)
+  {
+    Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
+//    try {
+//    things.removeElement(this);
+//    } catch (NoSuchElementException e) {}
+    return things;
+  }
+  
   // ============================================
   // Member functions
   // ============================================ 
@@ -72,19 +81,10 @@ class Munchkin extends Thing
     float forceStrength = sqrt(fx*fx + fy*fy);
     setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
   }
-  
-  Vector<Thing> getNeighbors(World world, float radius) {
-    Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
-//    try {
-//    things.removeElement(this);
-//    } catch (NoSuchElementException e) {}
-    return things;
-  }
 
   void step(World world)
   {
     resetForces();
-    
     Vector<Thing> neighbors = getNeighbors(world, getActionRadius());
 
     float neighborsStrength = 0;
@@ -132,7 +132,6 @@ class Munchkin extends Thing
     setHeat(newHeat);
     setSize(newSize);
     Munchkin kid = new Munchkin(nation, constrain(x(), 10, width-10), constrain(y(), 10, height-10), newSize, newHeat);
-    println("FUCK!!!");
     addForce( xInc*2000, yInc*2000 );
     kid.addForce( -xInc*2000, -yInc*2000 );
     return kid;

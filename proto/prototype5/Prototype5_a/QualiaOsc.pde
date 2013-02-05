@@ -143,7 +143,7 @@ class QualiaOsc
     //oscP5.plug(this, "qualiaStep",   "/qualia/step");
     
     this.manager = manager;
-  }  
+  }
   
   // ============================================
   // Setters & getters
@@ -164,7 +164,8 @@ class QualiaOsc
     oscP5.send(msg, brunoRemoteLocation);
   }
 
-  public void emergeDonutXY(int ID, float x, float y) {
+  public void emergeDonutXY(int ID, float x, float y)
+  {
     int newX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
     int newY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
     Donut thisDonut = world.donuts.get(ID);

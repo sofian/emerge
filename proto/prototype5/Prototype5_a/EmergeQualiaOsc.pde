@@ -4,7 +4,7 @@ class EmergeQualiaOsc extends QualiaOsc
   // Constructor
   // ============================================  
   public EmergeQualiaOsc(int maxAgents, int port, int remotePort, String ip, QualiaEnvironmentManager manager)
- {
+  {
     super(maxAgents, port, remotePort, ip, remotePort, ip, manager); // dummy
     println("Construct");
   }

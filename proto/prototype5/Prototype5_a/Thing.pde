@@ -45,11 +45,7 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   float y() { return getY(); }
   float size() { return getSize(); }
   float getActionRadius() { return (getSize() * ACTION_RADIUS_FACTOR + ACTION_RADIUS_BASE) / 2; }
-  
   abstract int getNation();
-
-  abstract void step(World world);
-  
   float getHeat() { return heat; }
   void setHeat(float h)
   {
@@ -73,6 +69,8 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   // ============================================
   // Member functions
   // ============================================ 
+  abstract void step(World world);
+
   void eat(Thing o)
   {
   }

@@ -12,6 +12,7 @@ final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
 final color   WORLD_BACKGROUND_COLOR = #000000;
 
+// Munchkins and donuts
 final int   N_MUNCHKINS = 0;
 final int   MUNCHKIN_INITIAL_SIZE = 5;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
@@ -152,11 +153,9 @@ void setup()
 // ============================================
 void draw()
 {
-  println("a");
   synchronized (world)
   {
-    //background(#000000);    
-  println("b");
+    //background(#000000);
     if (!started) return;
     try
     {
@@ -167,19 +166,15 @@ void draw()
       println(e);
     }
 
-  println("c");
     try {
       world.step();
-  println("d");
       world.draw();
-  println("e");
       
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
       //for (int i=0; i<osc.getManager().nInstances(); i++) {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
-  println("f");
 
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
       //for (int i=0; i<osc.getManager().nInstances(); i++) {
@@ -246,7 +241,6 @@ void mouseDragged()
   mouseMoved();
 }
 
-// Change the active booth with the keyboard
 void keyPressed() {
   if (HUMAN_CONTROLLED_AGENT) {
     int x = humanControlledAction[0];
