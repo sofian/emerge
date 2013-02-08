@@ -14,7 +14,9 @@ class World extends FWorld {
     
     for (int i=0; i < N_DONUTS; i++)
     {
-      donuts.put(i,new Donut(i));
+      Donut d = new Donut(i);
+      donuts.put(i, d);
+      super.add(d);
     }
     //blur = loadShader("blur.glsl");
     //blur.set("blurSize", 9);
@@ -80,9 +82,22 @@ class World extends FWorld {
     heatMap.beginDraw();
     Collections.sort(things);
     Collections.reverse(things); // sort from biggest to smallest
+    
+    // The cursor-controlled donut is the first donut of this booth
+    Donut cursorControlledDonut = donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+    if (cursorControlledDonut.getX() < 0 || cursorControlledDonut.getY() < 0)
+    {
+      println("Resetting donut position!");
+      cursorControlledDonut.setPosition(width/2, height/2); 
+    }
+    else
+    {
+      cursorControlledDonut.step(this);
+    }
 
     // Add the heat from the donut.
-    if (cursorAction) {
+    if (cursorAction)
+    {
       Vector<Thing> affectedThings = new Vector<Thing>();
       heatMap.fill(DONUT_HEAT_INCREASE, HEAT_MAP_SPREAD_FACTOR);
             
@@ -92,25 +107,21 @@ class World extends FWorld {
         Map.Entry me = (Map.Entry)it.next();
         Donut val = (Donut)me.getValue();
         //println("Looking at donut with key " + me.getKey() + " and position X=" + val.posX + " Y=" + val.posY);
-        affectedThings.addAll(getThingsInArea(val.posX, val.posY, val.size()/2));
-        heatMap.ellipse(val.posX, val.posY, val.size(), val.size());
+        affectedThings.addAll(getThingsInArea(val.getX(), val.getY(), val.getSize()/2));
+        heatMap.ellipse(val.getX(), val.getY(), val.getSize(), val.getSize());
+        val.step(this);
       }      
       
-      for (Thing t : affectedThings) {
+      for (Thing t : affectedThings)
+      {
         t.setHeat(t.getHeat() + DONUT_HEAT_INCREASE);
       }
-      //circleGradient(heatMap, cursorX, cursorY, donut.size(), 0, 1.0f, DONUT_HEAT_INCREASE);
-      /*
-      heatMap.blendMode(ADD);
-      heatMap.fill(1.0f, DONUT_HEAT_INCREASE);
-      heatMap.ellipse(cursorX, cursorY, donut.size(), donut.size());
-      heatMap.ellipse(cursorX, cursorY, donut.size()/2, donut.size()/2);*/
     }
     
     heatMap.loadPixels();
     
-    for (Thing t : things) {
-      
+    for (Thing t : things)
+    {      
       t.step(this);
 
       final int HEAT_MAP_GRADIENT_STEPS = 10;
@@ -123,35 +134,11 @@ class World extends FWorld {
       
       //deltaHeat *= HEAT_MAP_SPREAD_FACTOR;
       int traceSize = (int) ( t.size() * HEAT_TRACE_SIZE_FACTOR );
-      if (traceSize > 0) {
+      if (traceSize > 0)
+      {
         heatMap.fill(t.getHeat(), HEAT_MAP_SPREAD_FACTOR);
         heatMap.ellipse((int)t.x(), (int)t.y(), traceSize, traceSize);
-        //circleGradient(heatMap, (int)t.x(), (int)t.y(), traceSize, 0, t.getHeat(), HEAT_MAP_SPREAD_FACTOR);
-
-/*
-        PGraphics g = createGraphics(traceSize, traceSize);
-        g.beginDraw();
-        g.colorMode(GRAY, 1.0f);
-        g.background(0);
-        g.smooth();
-        g.noStroke();
-        g.ellipseMode(CENTER);
-        
-        float i=0;
-        for (int s=traceSize; s>=1; s--) {
-          g.fill(lerp(0, abs(deltaHeat), s / (float)traceSize));
-          g.ellipse(traceSize/2, traceSize/2, s, s);
-        }
-        
-        g.endDraw();
-       */
       }
-     
-//      heatMap.blend(g, 0, 0, g.width, g.height, (int)t.x() - t.size()/2, (int)t.y() - t.size()/2, t.size(), t.size(), (deltaHeat >= 0 ? ADD : SUBTRACT));
-      /*for (int i=0; i<HEAT_MAP_GRADIENT_STEPS; i++) {
-        heatMap.fill(deltaHeat, HEAT_MAP_GRADIENT_FACTOR);
-        heatMap.ellipse(t.x(), t.y(), t.size()*(HEAT_MAP_GRADIENT_STEPS-i), t.size()*(HEAT_MAP_GRADIENT_STEPS-i));
-      }*/
     }
 
     //heatMap.blendMode(REPLACE);
@@ -209,9 +196,12 @@ class World extends FWorld {
     {
       Map.Entry me = (Map.Entry)it.next();
       Donut donut = (Donut)me.getValue();
-      donut.draw();
     }
     super.draw();
+    
+    // Draw indicator point.
+    color(255,0,0);
+    ellipse(mouseX, mouseY, 3, 3);
   }
  
   /**

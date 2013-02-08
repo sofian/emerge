@@ -166,10 +166,14 @@ class QualiaOsc
 
   public void emergeDonutXY(int ID, float x, float y)
   {
+    //println("Donut " + ID + " has target pos: " + x + "\t" + y);
     int newX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
     int newY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
+    println("Donut " + ID + " has target pos: " + newX + "\t" + newY);
     Donut thisDonut = world.donuts.get(ID);
-    thisDonut.setPosition(newX, newY);
+    //thisDonut.setPosition(newX, newY);
+    thisDonut.setTargetPosition(newX, newY);
+    println("Donut " + ID + " has target pos: " + newX + "\t" + newY);
   }
   
   public void qualiaCreate(int agentId, int observationDim, int actionDim)
@@ -268,7 +272,10 @@ class QualiaOsc
   
   void oscEvent(OscMessage msg)
   {
-    println("OSC: " + msg);
+    if (QUALIA_VERBOSE)
+    {
+      println("OSC: " + msg);
+    }
     
     String pattern = msg.addrPattern();
     if (pattern.equals("/qualia/create"))

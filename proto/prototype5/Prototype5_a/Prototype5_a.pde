@@ -11,13 +11,19 @@ final float   ACTION_RADIUS_FACTOR = 2.0f;
 final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
 final color   WORLD_BACKGROUND_COLOR = #000000;
+final boolean QUALIA_VERBOSE = false;
+final boolean DONUT_MOUSE_SIMULATION = false; // set to true if you want to simulate fiducial tracking by click-dragging your mouse cursor
 
-// Munchkins and donuts
+// Munchkin related
 final int   N_MUNCHKINS = 0;
 final int   MUNCHKIN_INITIAL_SIZE = 5;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
 final int   N_QUALIA_AGENTS = 12;
-final int   N_DONUTS = 216;
+
+// Donut related
+final int   N_DONUTS = 1; // 216
+final float DONUT_CURSOR_FORCE_MULTIPLIER = 20.0f;
+final float DONUT_HEAT_INCREASE = 0.2f;
 
 // Heat related
 final int     HEAT_MAP_GRADIENT_STEPS = 10;
@@ -33,8 +39,6 @@ final float   HEAT_TRACE_SIZE_FACTOR = 5.0f;
 final float   HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
 final float   HEAT_DECREASE = 0.0001f;
 final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
-
-final float DONUT_HEAT_INCREASE = 0.2f;
 
 final int BOOTHID = 1;
 final int CONTROLLER_OSC_PORT        = 12000 + (BOOTHID-1)*100;
@@ -59,9 +63,6 @@ QualiaOsc osc;
 
 World    world;
 volatile boolean started = true;
-
-int cursorX = mouseX;
-int cursorY = mouseY;
 boolean       cursorAction = true;
 
 // ============================================
@@ -85,77 +86,86 @@ void setup()
   //world.addThing(theDonut);
     
   // Launch the Qualia agents
-  for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
-    String execFullPath;
-    if (platform == WINDOWS)
+  if (platform == WINDOWS)
+  {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
     {
-      execFullPath = "C:/DEV/funkmeisterb/Qualia/tests/osc/Release/QualiaOSC.exe";
-    }
-    else
-    {
-      execFullPath = "/home/tats/Documents/workspace/qualia/tests/osc/build/computer/main";
-    }
-    
-    String actionParams = String.valueOf(N_ACTIONS_XY);
-    for (int j=1; j<ACTION_DIM; j++)
-      actionParams += "," + String.valueOf(N_ACTIONS_XY);
-    
-   // String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams,  "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
-    String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
-    //println(execParams);
-    if (platform == WINDOWS)
-    {
-Process p = open(execParams);
-    }
-    else
-    {
-      Process p = open(new String[]{ "/bin/ls", "-l" });
-      try {
-      for (int j=0; j<1000; j++)
-        print((char)p.getErrorStream().read());
-      } catch (IOException e) {
-        println("FDSFSDDS");
+      String execFullPath = "D:/EMERGE/Emerge_Qualia/tests/osc/Release/QualiaOSC.exe";
+      
+      String actionParams = String.valueOf(N_ACTIONS_XY);
+      for (int j=1; j<ACTION_DIM; j++)
+      {
+        actionParams += "," + String.valueOf(N_ACTIONS_XY);
+      }
+      
+      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
+      //println(execParams);
+      Process p = open(execParams);
+      println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
+  
+      try
+      {
+        Thread.sleep(100);
+      }
+      catch (InterruptedException e)
+      {
+        println(e);
       }
     }
-    println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
-
-    try {
-      Thread.sleep(100);
-    }
-    catch (InterruptedException e) {
-      println(e);
-    }
+  }
+  else
+  {
+    println("Please launch " + (N_QUALIA_AGENTS-1) + " agents with ids " + ((BOOTHID-1)*N_QUALIA_AGENTS) + " to " + ((BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-2));
   }
   
-  try {
+  try
+  {
     Thread.sleep(5000);
-  } catch (InterruptedException e) {
+  }
+  catch (InterruptedException e)
+  {
     println(e);
   }
     
   // Wait for init and start messages.
   // Wait for init().
-  try {
+  try
+  {
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Init done");
     osc.getManager().unmarkAll();
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+    {
     //for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseInit(i);
     }
   
     // Wait for start().
-    while (!osc.getManager().allMarked()) Thread.sleep(100);
+    while (!osc.getManager().allMarked())
+    {
+      Thread.sleep(100);
+    }
     println("Start done");
     osc.getManager().unmarkAll();
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+    {
+      println("Handling " + i);
 //    for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
     }
-  } catch (InterruptedException e) {
+  }
+  catch (InterruptedException e)
+  {
     println(e);
   }
   
+  //
+  if (DONUT_MOUSE_SIMULATION)
+  {
+    Donut cursorControlledDonut = world.donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+    cursorControlledDonut.setPosition(width/2, height/2);
+    cursorControlledDonut.setTargetPosition(width/2, height/2);
+  }
 }
 
 // ============================================
@@ -172,11 +182,14 @@ void draw()
       while (!osc.getManager().allMarked()) Thread.sleep(100);
       //println("Step done");
       osc.getManager().unmarkAll();
-    } catch (InterruptedException e) {
+    }
+    catch (InterruptedException e)
+    {
       println(e);
     }
 
-    try {
+    try
+    {
       world.step();
       world.draw();
       
@@ -239,8 +252,11 @@ void circleGradient(PGraphics g, int x, int y, int size, float min, float max, f
 // The mouse controls the donut with ID 0 in the active booth
 // ============================================
 void mouseMoved() {
-  cursorX = mouseX;
-  cursorY = mouseY;
+  if (DONUT_MOUSE_SIMULATION)
+  {
+    Donut cursorControlledDonut = world.donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+    cursorControlledDonut.setTargetPosition(mouseX, mouseY);
+  }
 }
 
 // ============================================
