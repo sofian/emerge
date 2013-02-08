@@ -76,38 +76,45 @@ abstract class QualiaEnvironmentManager
     return env;
   }
   
-  boolean allMarked() {
-    for (QualiaEnvironment e : instances.values()) {
+  boolean allMarked()
+  {
+    for (QualiaEnvironment e : instances.values())
+	{
       if (!e.marked())
         return false;
     }
     return true;
   }
   
-  void unmarkAll() {
+  void unmarkAll()
+  {
     for (QualiaEnvironment e : instances.values())
       e.unmark();
   }
   
-  void init(int id) {
+  void init(int id)
+  {
     QualiaEnvironment e = get(id);
     e.mark();
     e.init();
   }
   
-  void start(int id) {
+  void start(int id)
+  {
     QualiaEnvironment e = get(id);
     e.mark();
     e.start();
   }
   
-  void step(int id, int[] action) {
+  void step(int id, int[] action)
+  {
     QualiaEnvironment e = get(id);
     e.mark();
     e.step(action);
   }
   
-  float[] getObservation(int id) {
+  float[] getObservation(int id)
+  {
     return get(id).getObservation();
   }
   
@@ -115,32 +122,27 @@ abstract class QualiaEnvironmentManager
 }
 
 // ******************************************************************
-// This class handles all OSC communication
+// This class handles all OSC communication to and from Qualia
 // ******************************************************************
 class QualiaOsc
 {  
   OscP5 oscP5;
-  Vector<NetAddress> remoteLocation;  
-  NetAddress brunoRemoteLocation;  
+  Vector<NetAddress> qualiaOSCPipes; // communication channels with individual Qualia agents
   QualiaEnvironmentManager manager;
 
   // ============================================
   // Constructor
   // ============================================
-  public QualiaOsc(int maxAgents, int port, int remotePort, String ip, int brunoRemotePort, String brunoIp, QualiaEnvironmentManager manager)
+  public QualiaOsc(int maxAgents, int port, int remotePort, String ip, QualiaEnvironmentManager manager)
   {
     println(port + " " + remotePort + " " + ip);
     oscP5 = new OscP5(this, port);
-    remoteLocation = new Vector<NetAddress>();
+    qualiaOSCPipes = new Vector<NetAddress>();
     for (int i=0; i<maxAgents; i++)
-      remoteLocation.add(new NetAddress(ip, remotePort+i));
-    brunoRemoteLocation = new NetAddress(brunoIp, brunoRemotePort);
-    
-    oscP5.plug(this, "emergeDonutXY", "/booth" + BOOTHID + "/donut/xy");
+    {
+      qualiaOSCPipes.add(new NetAddress(ip, remotePort+i));
+    }
     oscP5.plug(this, "emergeDonutAction", "/donut/1/action");
-    //oscP5.plug(this, "qualiaInit",   "/qualia/init");
-    //oscP5.plug(this, "qualiaStart",  "/qualia/start");
-    //oscP5.plug(this, "qualiaStep",   "/qualia/step");
     
     this.manager = manager;
   }
@@ -153,120 +155,109 @@ class QualiaOsc
   // ============================================
   // Member functions
   // ============================================ 
-  // NOTE: This should have been in EmergeQualiaOsc but the super() call doesn't work and I don't know why.
-  void emergeSendMunchkinInfo(int id, Munchkin m) {
-    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/munchkin");
-    msg.add(id);
-    msg.add(m.x()/width);
-    msg.add(m.y()/height);
-    msg.add(m.size());
-    msg.add(m.getHeat());
-    oscP5.send(msg, brunoRemoteLocation);
-  }
-
-  public void emergeDonutXY(int ID, float x, float y)
-  {
-    //println("Donut " + ID + " has target pos: " + x + "\t" + y);
-    int newX = (int)constrain(map(x, 0., 1., 0, width), 0, width-1);
-    int newY = (int)constrain(map(y, 0., 1., 0, height), 0, height-1);
-    println("Donut " + ID + " has target pos: " + newX + "\t" + newY);
-    Donut thisDonut = world.donuts.get(ID);
-    //thisDonut.setPosition(newX, newY);
-    thisDonut.setTargetPosition(newX, newY);
-    println("Donut " + ID + " has target pos: " + newX + "\t" + newY);
-  }
-  
   public void qualiaCreate(int agentId, int observationDim, int actionDim)
   {
     manager.create(agentId, observationDim, actionDim);
-    /*
-    OscMessage message = new OscMessage("/qualia/response/create/" + agentId);
-    message.add(id); // id
-    sendOsc(message);*/
   }
   
-  void sendResponseInit(int id) {
+  void sendResponseInit(int id)
+  {
     OscMessage message = new OscMessage("/qualia/response/init/" + id);
     sendOsc(message);
   }
   
-  void sendResponseStart(int id, float[] obs) {
+  void sendResponseStart(int id, float[] obs)
+  {
     OscMessage message = new OscMessage("/qualia/response/start/" + id);
-//    message.add(agentId); // id
     message.add(obs);     // observation
     sendOsc(message);
   }
 
-  void sendResponseStep(int id, float[] obs) {
+  void sendResponseStep(int id, float[] obs)
+  {
     OscMessage message = new OscMessage("/qualia/response/step/" + id);
- //   message.add(agentId); // id
     message.add(obs);     // observation
     sendOsc(message);
   }
   
-  void qualiaInit(int id) {
+  void qualiaInit(int id)
+  {
     println("Qualia init: " + id);
     manager.init(id);
   }
 
-  void qualiaStart(int id) {
+  void qualiaStart(int id)
+  {
     println("Qualia start: " + id);
     manager.start(id);
   }
 
-  void qualiaStep(int id, int[] action) {
+  void qualiaStep(int id, int[] action)
+  {
     manager.step(id, action);
   }
   
   // Controlled agent
-  void sendAgentResponseInit(int id) {
+  void sendAgentResponseInit(int id)
+  {
     OscMessage message = new OscMessage("/qualia/agent/response/init/" + id);
     sendOsc(message);
   }
   
-  void sendAgentResponseStart(int id, int[] actions) {
+  void sendAgentResponseStart(int id, int[] actions)
+  {
     OscMessage message = new OscMessage("/qualia/agent/response/start/" + id);
     message.add(actions);     // observation
     sendOsc(message);
   }
 
-  void sendAgentResponseStep(int id, int[] actions) {
+  void sendAgentResponseStep(int id, int[] actions)
+  {
     OscMessage message = new OscMessage("/qualia/agent/response/step/" + id);
     message.add(actions);     // observation
     sendOsc(message);
   }
   
-  void qualiaAgentInit(int id) {
+  void qualiaAgentInit(int id)
+  {
     println("Qualia init: " + id);
-    if (id != 0) {
+    if (id != 0)
+	{
       println("Agent controls only work for id=0");
     }
     sendAgentResponseInit(id);
-//    manager.init(id);
   }
 
-  void qualiaAgentStart(int id, float[] observation) {
+  void qualiaAgentStart(int id, float[] observation)
+  {
     println("Qualia start: " + id);
-    if (id != 0) {
+    if (id != 0)
+	{
       println("Agent controls only work for id=0");
     }
     sendAgentResponseStart(id, humanControlledAction);
   }
 
-  void qualiaAgentStep(int id, float[] observation) {
-    if (id != 0) {
+  void qualiaAgentStep(int id, float[] observation)
+  {
+    if (id != 0)
+	{
       println("Agent controls only work for id=0");
     }
     sendAgentResponseStep(id, humanControlledAction);
   }
 
-
-  void sendOsc(OscPacket packet) {
-    for (NetAddress loc: remoteLocation)
+  // Sends an OSC packet toall Qualia agents
+  void sendOsc(OscPacket packet)
+  {
+    for (NetAddress loc: qualiaOSCPipes)
+    {
       oscP5.send(packet, loc);
+    }
   }
   
-  int extractId(OscMessage msg, String startPath) {
+  int extractId(OscMessage msg, String startPath)
+  {
     return Integer.parseInt(msg.addrPattern().substring(startPath.length()+1));
   }
   
@@ -300,46 +291,140 @@ class QualiaOsc
       qualiaStep(id, action);
     }
 
-    else if (pattern.startsWith("/qualia/agent/init")) {
+    else if (pattern.startsWith("/qualia/agent/init"))
+	{
       qualiaAgentInit(extractId(msg, "/qualia/agent/init"));
     }
     
-    else if (pattern.startsWith("/qualia/agent/start")) {
+    else if (pattern.startsWith("/qualia/agent/start"))
+	{
 //      println("qualia step");
       int id = extractId(msg, "/qualia/agent/start");
 //      println(manager.get(id).getActionDim());
       float[] observation = new float[manager.get(id).getObservationDim()];
 //      println(msg.arguments().length);
-      for (int i=0; i<observation.length; i++) {
+      for (int i=0; i<observation.length; i++)
+	  {
         observation[i] = msg.get(i).floatValue();
       }
 //      println("COCO");
       qualiaAgentStart(id, observation);
     }
     
-    else if (pattern.startsWith("/qualia/agent/step")) {
+    else if (pattern.startsWith("/qualia/agent/step"))
+	{
 //      println("qualia step");
       int id = extractId(msg, "/qualia/agent/step");
 //      println(manager.get(id).getActionDim());
       float[] observation = new float[manager.get(id).getObservationDim()];
 //      println(msg.arguments().length);
-      for (int i=0; i<observation.length; i++) {
+      for (int i=0; i<observation.length; i++)
+	  {
         observation[i] = msg.get(i).floatValue();
       }
 //      println("COCO");
       qualiaAgentStep(id, observation);
     }
+  }
+}
 
-    /* with theOscMessage.isPlugged() you check if the osc message has already been
-     * forwarded to a plugged method. if theOscMessage.isPlugged()==true, it has already 
-     * been forwared to another method in your sketch. theOscMessage.isPlugged() can 
-     * be used for double posting but is not required.
-     */
-    /*if (msg.isPlugged()==false) {
-      /* print the address pattern and the typetag of the received OscMessage */
-    /*  println("### received an osc message.");
-      println("### addrpattern\t"+msg.addrPattern());
-      println("### typetag\t"+msg.typetag());
-    }*/
+// ******************************************************************
+// This class handles all OSC communication to and from the logic patch in Max/MSP
+// ******************************************************************
+class LogicOsc
+{  
+  OscP5 oscP5;
+  NetAddress logicLocation;  
+
+  // ============================================
+  // Constructor
+  // ============================================
+  public LogicOsc(String ip, int port)
+  {
+    oscP5 = new OscP5(this, port);
+    logicLocation = new NetAddress(ip, port);
+  }
+  
+  // ============================================
+  // Member functions
+  // ============================================ 
+  // NOTE: This should have been in EmergeQualiaOsc but the super() call doesn't work and I don't know why.
+  void emergeSendMunchkinInfo(int id, Munchkin m)
+  {
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/munchkin");
+    msg.add(id);
+    msg.add(m.x()/width);
+    msg.add(m.y()/height);
+    msg.add(m.size());
+    msg.add(m.getHeat());
+    oscP5.send(msg, logicLocation);
+  }
+
+  // Send the physics-based donut coordinates
+  void sendDonutPhysics(Donut d)
+  {
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/donut/xyphysics");
+    msg.add(d.ID);
+    msg.add(d.getX()/width);
+    msg.add(d.getY()/height);
+    oscP5.send(msg, logicLocation);
+  }
+  
+  void sendBoothLogin(Donut d, boolean b)
+  {
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/" + d.ID);
+    if (b)
+    {
+      msg.add(1);
+    }
+    else
+    {
+      msg.add(false);
+    }
+    oscP5.send(msg, logicLocation);
+  }
+}
+
+// ******************************************************************
+// This OSC client handles all communication from the fiducial tracker
+// ******************************************************************
+class FiducialOsc
+{  
+  OscP5 oscP5;
+
+  // ============================================
+  // Constructor
+  // ============================================
+  public FiducialOsc(String ip, int port)
+  {
+    oscP5 = new OscP5(this, port);
+    // Sample incoming message: /tuio/3Dobj set 0 3 0.408413 0.615067 0.106812 2.649051 0.823067 5.236993 0. 0. 0. 0. 0. 0. 0. 0.
+    oscP5.plug(this, "parseFiducialInput", "/tuio/3Dobj");
+  }
+  
+  // ============================================
+  // Member functions
+  // ============================================
+  void parseFiducialInput(String instruction, int sessionID, int markerID, float posX, float posY, float posZ, float xyAngle, float zxAngle, float yzAngle, float velX, float velY, float velZ, float rotVelX, float rotVelY, float rotVelZ, float mAccel, float rAccel)
+  {
+    // only listen to 'set' commands
+    if (instruction.equals("set"))
+    {      
+      int newX = (int)constrain(map(posX, 0., 1., 0, width), 0, width-1);
+      int newY = (int)constrain(map(posY, 0., 1., 0, height), 0, height-1);
+      
+      // See if the donut already exists
+      Donut thisDonut = world.donuts.get(markerID);
+      if (thisDonut == null)
+      {
+        thisDonut = new Donut(markerID);
+        thisDonut.setPosition(newX, newY);
+        world.addDonut(thisDonut);
+      }
+      else
+      {
+        thisDonut.setTargetPosition(newX, newY);
+      }
+    }
   }
 }

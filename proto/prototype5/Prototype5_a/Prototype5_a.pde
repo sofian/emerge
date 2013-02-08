@@ -24,6 +24,8 @@ final int   N_QUALIA_AGENTS = 12;
 final int   N_DONUTS = 1; // 216
 final float DONUT_CURSOR_FORCE_MULTIPLIER = 20.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
+final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
+final int   DONUT_IDLE_LIFETIME_MS = 5000; // idle time to allow before removing a donut 
 
 // Heat related
 final int     HEAT_MAP_GRADIENT_STEPS = 10;
@@ -40,13 +42,14 @@ final float   HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
 final float   HEAT_DECREASE = 0.0001f;
 final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
-final int BOOTHID = 1;
-final int CONTROLLER_OSC_PORT        = 12000 + (BOOTHID-1)*100;
-final int CONTROLLER_OSC_REMOTE_PORT = 11000 + (BOOTHID-1)*100;
-final int BRUNO_OSC_REMOTE_PORT      = 10000;
-final String CONTROLLER_OSC_IP = "127.0.0.1";
-final String BRUNO_OSC_IP      = "127.0.0.1";
-//final String BRUNO_OSC_IP      = "192.168.123.208";
+final int     BOOTHID = 1;
+final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
+final int     QUALIA_OSC_BASE_PORT     = 11000 + (BOOTHID-1)*100; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
+final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
+final String  MAXMSP_LOGIC_IP          = "127.0.0.1"; // IP address of the machine consolidating the input from several booths
+final int     MAXMSP_LOGIC_PORT        = 10000;
+final String  TUIO_TAG_IP              = "127.0.0.1"; // IP address of the machine running the fiducial tracker
+final int     TUIO_TAG_PORT            = 4444; // The port of the communication from the fiducial tracker on this machine
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
@@ -59,7 +62,9 @@ final int MAX_N_AGENTS = 100;
 final boolean HUMAN_CONTROLLED_AGENT = false;
 int[] humanControlledAction = new int[2];
 
-QualiaOsc osc;
+QualiaOsc osc; // OSC server & client for Qualia
+LogicOsc logicClient; // OSC client for the logic
+FiducialOsc fiducialClient; // OSC client for fiducial tracking
 
 World    world;
 volatile boolean started = true;
@@ -81,16 +86,17 @@ void setup()
   world.setEdges();
   world.setGravity(0, 0); // no x,y gravity
 
-  osc = new QualiaOsc(MAX_N_AGENTS, CONTROLLER_OSC_PORT, CONTROLLER_OSC_REMOTE_PORT, CONTROLLER_OSC_IP, BRUNO_OSC_REMOTE_PORT, BRUNO_OSC_IP, new EmergeEnvironmentManager(world));
-  
-  //world.addThing(theDonut);
+  // The osc client and server for communication with Qualia
+  osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
+  logicClient = new LogicOsc(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
+  fiducialClient = new FiducialOsc(TUIO_TAG_IP, TUIO_TAG_PORT);
     
   // Launch the Qualia agents
   if (platform == WINDOWS)
   {
     for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
     {
-      String execFullPath = "D:/EMERGE/Emerge_Qualia/tests/osc/Release/QualiaOSC.exe";
+      String execFullPath = "C:/Qualia/QualiaOSC.exe";
       
       String actionParams = String.valueOf(N_ACTIONS_XY);
       for (int j=1; j<ACTION_DIM; j++)
@@ -98,7 +104,7 @@ void setup()
         actionParams += "," + String.valueOf(N_ACTIONS_XY);
       }
       
-      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(CONTROLLER_OSC_REMOTE_PORT), "-rport", String.valueOf(CONTROLLER_OSC_PORT) };
+      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
       //println(execParams);
       Process p = open(execParams);
       println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
@@ -136,7 +142,6 @@ void setup()
     osc.getManager().unmarkAll();
     for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
     {
-    //for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseInit(i);
     }
   
@@ -150,7 +155,6 @@ void setup()
     for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
     {
       println("Handling " + i);
-//    for (int i=0; i<osc.getManager().nInstances(); i++) {
       osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
     }
   }
@@ -159,7 +163,6 @@ void setup()
     println(e);
   }
   
-  //
   if (DONUT_MOUSE_SIMULATION)
   {
     Donut cursorControlledDonut = world.donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
@@ -180,7 +183,6 @@ void draw()
     try
     {
       while (!osc.getManager().allMarked()) Thread.sleep(100);
-      //println("Step done");
       osc.getManager().unmarkAll();
     }
     catch (InterruptedException e)
@@ -193,14 +195,14 @@ void draw()
       world.step();
       world.draw();
       
-      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
-      //for (int i=0; i<osc.getManager().nInstances(); i++) {
+      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+      {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
-        osc.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
+        logicClient.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
-      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++) {
-      //for (int i=0; i<osc.getManager().nInstances(); i++) {
+      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+      {
         osc.sendResponseStep(i, osc.getManager().get(i).getObservation());
       }
       
@@ -288,14 +290,12 @@ void keyPressed() {
 
 void killQualia()
 {
-  /*
   if (platform == WINDOWS)
   {
     println("Killing Qualia instances..."); 
-    String[] params = { "taskkill.exe", "/IM", "Qualia.exe", "/F"};
+    String[] params = { "taskkill.exe", "/IM", "QualiaOSC.exe", "/F"};
     open(params);
   }
-  */
 }
 
 void dispose()

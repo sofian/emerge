@@ -6,6 +6,7 @@ class Donut extends FCircle
   int ID;
   int targetPosX;
   int targetPosY;
+  int msLastTargetPosition; // the time of the last target position
   
   // ============================================
   // Constructor
@@ -18,6 +19,7 @@ class Donut extends FCircle
     ID = id;
     targetPosX = 50;
     targetPosY = 50;
+    msLastTargetPosition = millis(); // simulate initial instructions
   }
   
   // ============================================
@@ -27,7 +29,12 @@ class Donut extends FCircle
   {
     targetPosX = x;
     targetPosY = y;
-    println("New target position: " + x + "\t" + y);
+    msLastTargetPosition = millis();
+    
+    if (DONUT_VERBOSE)
+    {
+      println("Donut " + ID + " has target pos: " + targetPosX + "\t" + targetPosY);
+    }
   }
   
   // ============================================
@@ -43,19 +50,16 @@ class Donut extends FCircle
   }
   
   void step(World world)
-  {
+  {    
     // Approach the target position
     float forceX = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosX-getX());
     float forceY = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosY-getY());
     addForce(forceX, forceY);
-    println("Target pos: [" + targetPosX + ";" + targetPosY + "]\nCurrentPos: [" + getX() + ";" + getY() + "]\nForces: [" + forceX + ";" + forceY + "]");
+    if (DONUT_VERBOSE)
+    {
+      println("Target pos: [" + targetPosX + ";" + targetPosY + "]\nCurrentPos: [" + getX() + ";" + getY() + "]\nForces: [" + forceX + ";" + forceY + "]");
+    }
     
-    // Inform Max/MSP client of physics-enabled position
-    NetAddress remote = new NetAddress("127.0.0.1", 4444);
-    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/donut/xyphysics");
-    msg.add(ID);
-    msg.add(getX());
-    msg.add(getY());
-    osc.oscP5.send(msg, remote);
+    logicClient.sendDonutPhysics(this);
   }
 }

@@ -4,27 +4,25 @@ class World extends FWorld {
   Vector<Thing> things;
   PGraphics heatMap;
   PFont font = createFont("Arial",16,true); // Arial, 16 point, anti-aliasing on
-//  PShader blur;
 
-  HashMap<Integer, Donut> donuts = new HashMap<Integer, Donut>(); // identified by their ID
+  // This is a dynamic hash table of donuts identified by their ID
+  HashMap<Integer, Donut> donuts = new HashMap<Integer, Donut>();
 
-  World(color backgroundColor) {
+  World(color backgroundColor)
+  {
     this.backgroundColor = backgroundColor;
     things = new Vector<Thing>();
     
-    for (int i=0; i < N_DONUTS; i++)
+    if (DONUT_MOUSE_SIMULATION)
     {
+      // Prepopulate with one donut
+      int i = (BOOTHID-1)*N_QUALIA_AGENTS;
       Donut d = new Donut(i);
       donuts.put(i, d);
       super.add(d);
     }
-    //blur = loadShader("blur.glsl");
-    //blur.set("blurSize", 9);
-    //blur.set("sigma", 5.0f);
-
+    
     heatMap = createGraphics(WINDOW_WIDTH, WINDOW_HEIGHT);
-//    heatMap = createGraphics(WINDOW_WIDTH, WINDOW_HEIGHT, P2D);
-//    heatMapBuffer = createGraphics(WINDOW_WIDTH, WINDOW_HEIGHT);
     heatMap.beginDraw();
     heatMap.colorMode(GRAY, 1.0f);
     heatMap.noStroke();
@@ -32,47 +30,79 @@ class World extends FWorld {
     heatMap.endDraw();
   }
   
-  void addThing(Thing t) {
+  void addThing(Thing t)
+  {
     super.add(t);
     things.add(t);
   }
   
-  void removeThing(Thing t) {
+  void removeThing(Thing t)
+  {
     super.remove(t);
     things.remove(t);
   }
   
-  Vector<Thing> getThings() {
+  Vector<Thing> getThings()
+  {
     return things;
   }
   
-  float getHeatAt(float x, float y) {
+  void addDonut(Donut d)
+  {
+    donuts.put(d.ID, d);
+    super.add(d);
+    println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
+    // Inform logic of donut logon at this booth
+    logicClient.sendBoothLogin(d, true);
+  }
+  
+  void removeDonut(Donut d)
+  {
+    super.remove(d);
+    donuts.remove(d.ID);
+    println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
+    // Inform logic of donut logout at this booth
+    logicClient.sendBoothLogin(d, false);
+  }
+  
+  float getHeatAt(float x, float y)
+  {
     x = constrain(x, 0, WINDOW_WIDTH-1);
     y = constrain(y, 0, WINDOW_HEIGHT-1);
     //println(red(heatMap.pixels[(int)x + ((int)y)*WINDOW_WIDTH]));
     return (float) red(heatMap.pixels[(int)x + ((int)y)*WINDOW_WIDTH]) / 255.0f;
   }
   
-  Vector<Thing> getThingsInArea(float x, float y, float radius) {
+  Vector<Thing> getThingsInArea(float x, float y, float radius)
+  {
     Vector<Thing> inArea = new Vector<Thing>();
-    for (Thing t : things) {
+    for (Thing t : things)
+    {
       if (circleCollision(x, y, radius, t.x(), t.y(), t.size() * 0.5))
+      {
         inArea.add(t);
+      }
     }
     return inArea;
   }
   
-  void step() {
-    try {
+  void step()
+  {
+    try
+    {
       super.step();
-    } catch (ArrayIndexOutOfBoundsException e) {
+    }
+    catch (ArrayIndexOutOfBoundsException e)
+    {
       println("----------- Thing stopped working -----------");
       println(e);
       e.printStackTrace();
       
       // dump data
-      for (Thing t : things) {
-        if (Double.isNaN(t.getForceX()) || Double.isNaN(t.getForceY())) {
+      for (Thing t : things)
+      {
+        if (Double.isNaN(t.getForceX()) || Double.isNaN(t.getForceY()))
+        {
           println("Bad force");
           t.resetForces();
         }
@@ -83,18 +113,21 @@ class World extends FWorld {
     Collections.sort(things);
     Collections.reverse(things); // sort from biggest to smallest
     
-    // The cursor-controlled donut is the first donut of this booth
-    Donut cursorControlledDonut = donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
-    if (cursorControlledDonut.getX() < 0 || cursorControlledDonut.getY() < 0)
+    if (DONUT_MOUSE_SIMULATION)
     {
-      println("Resetting donut position!");
-      cursorControlledDonut.setPosition(width/2, height/2); 
+      // The cursor-controlled donut is the first donut of this booth
+      Donut cursorControlledDonut = donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+      if (cursorControlledDonut.getX() < 0 || cursorControlledDonut.getY() < 0)
+      {
+        println("Resetting donut position!");
+        cursorControlledDonut.setPosition(width/2, height/2); 
+      }
+      else
+      {
+        cursorControlledDonut.step(this);
+      }
     }
-    else
-    {
-      cursorControlledDonut.step(this);
-    }
-
+    
     // Add the heat from the donut.
     if (cursorAction)
     {
@@ -148,42 +181,63 @@ class World extends FWorld {
 
     Vector<Thing> splitted = new Vector<Thing>();
     Vector<Thing> dead     = new Vector<Thing>();
-    for (Thing t: things) {
-
+    for (Thing t: things)
+    {
       // Clean.
-      if (t.isDead()) {
+      if (t.isDead())
+      {
         dead.add(t);
       }
       
       // Split.
-      else if (t instanceof Munchkin) {
+      else if (t instanceof Munchkin)
+      {
         Munchkin m = (Munchkin) t;
-        if (m.size() <= 0) {
+        if (m.size() <= 0)
+        {
           dead.add(t);
         }
-        else if (m.getHeat() >= 0.9f && random(0,1) < 0.05f) {
+        else if (m.getHeat() >= 0.9f && random(0,1) < 0.05f)
+        {
           Thing s = m.split();
           if (s != null)
+          {
             splitted.add(s);
+          }
         }
       }
     }
 
-    //for (Thing t: dead)
-    //  remove(t);
-
     for (Thing t: splitted)
+    {
       addThing(t);
+    }
 
     // Make sure we respect boundaries.
-    for (Thing t: things) {
+    for (Thing t: things)
+    {
       t.setPosition( constrain(t.getX(), 5, width-5), constrain(t.getY(), 5, height-5) );
     }
     
     heatMap.endDraw();
+    
+    // Delete dead donuts
+    Iterator it = donuts.entrySet().iterator();
+    while (it.hasNext())
+    {
+      Map.Entry me = (Map.Entry)it.next();
+      Donut d = (Donut)me.getValue();
+      // Determine how long has elapsed since the last target position was received
+      int msElapsed = millis() - d.msLastTargetPosition;
+      if (msElapsed > DONUT_IDLE_LIFETIME_MS)
+      {
+        removeDonut(d);
+      }
+    }
   }
 
-  void draw() {
+  void draw()
+  {
     background(backgroundColor);
     //heatMap.blendMode(BLEND);
     textFont(font, 16);
@@ -205,7 +259,7 @@ class World extends FWorld {
   }
  
   /**
-   * Check if two circle collide
+   * Check if two circles collide
    * x_1, y_1, radius_1 defines the first circle
    * x_2, y_2, radius_2 defines the second circle
    * From: http://wiki.processing.org/w/Circle-Circle_intersection
