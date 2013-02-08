@@ -75,6 +75,8 @@ boolean       cursorAction = true;
 // ============================================
 void setup()
 {
+  killQualia();
+  
   // NOTE: We can't use P2D because we need to make a loadPixels() in the Booth class and it makes everything very slow.
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
   noCursor();
@@ -269,8 +271,10 @@ void mouseDragged()
   mouseMoved();
 }
 
-void keyPressed() {
-  if (HUMAN_CONTROLLED_AGENT) {
+void keyPressed()
+{
+  if (HUMAN_CONTROLLED_AGENT)
+  {
     int x = humanControlledAction[0];
     int y = humanControlledAction[1];
     if (key == CODED) {

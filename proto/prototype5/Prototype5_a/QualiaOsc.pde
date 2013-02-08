@@ -409,7 +409,9 @@ class FiducialOscServer
   {
     // only listen to 'set' commands
     if (instruction.equals("set"))
-    {      
+    {
+      // Flip X axis to implement mirror when compared to user
+      posX = 1 - posX;
       int newX = (int)constrain(map(posX, 0., 1., 0, width), 0, width-1);
       int newY = (int)constrain(map(posY, 0., 1., 0, height), 0, height-1);
       
