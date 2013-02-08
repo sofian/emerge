@@ -63,8 +63,8 @@ final boolean HUMAN_CONTROLLED_AGENT = false;
 int[] humanControlledAction = new int[2];
 
 QualiaOsc osc; // OSC server & client for Qualia
-LogicOsc logicClient; // OSC client for the logic
-FiducialOsc fiducialClient; // OSC client for fiducial tracking
+LogicOscClient oscLogic; // OSC client for the logic
+FiducialOscServer oscFiducials; // OSC client for fiducial tracking
 
 World    world;
 volatile boolean started = true;
@@ -88,8 +88,8 @@ void setup()
 
   // The osc client and server for communication with Qualia
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
-  logicClient = new LogicOsc(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
-  fiducialClient = new FiducialOsc(TUIO_TAG_IP, TUIO_TAG_PORT);
+  oscLogic = new LogicOscClient(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
+  oscFiducials = new FiducialOscServer(TUIO_TAG_IP, TUIO_TAG_PORT);
     
   // Launch the Qualia agents
   if (platform == WINDOWS)
@@ -198,7 +198,7 @@ void draw()
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
       {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
-        logicClient.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
+        oscLogic.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)

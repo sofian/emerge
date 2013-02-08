@@ -53,7 +53,7 @@ class World extends FWorld {
     super.add(d);
     println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
     // Inform logic of donut logon at this booth
-    logicClient.sendBoothLogin(d, true);
+    oscLogic.sendBoothLogin(d, true);
   }
   
   void removeDonut(Donut d)
@@ -62,7 +62,7 @@ class World extends FWorld {
     donuts.remove(d.ID);
     println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
     // Inform logic of donut logout at this booth
-    logicClient.sendBoothLogin(d, false);
+    oscLogic.sendBoothLogin(d, false);
   }
   
   float getHeatAt(float x, float y)

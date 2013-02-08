@@ -331,7 +331,7 @@ class QualiaOsc
 // ******************************************************************
 // This class handles all OSC communication to and from the logic patch in Max/MSP
 // ******************************************************************
-class LogicOsc
+class LogicOscClient
 {  
   OscP5 oscP5;
   NetAddress logicLocation;  
@@ -339,9 +339,9 @@ class LogicOsc
   // ============================================
   // Constructor
   // ============================================
-  public LogicOsc(String ip, int port)
+  public LogicOscClient(String ip, int port)
   {
-    oscP5 = new OscP5(this, port);
+    oscP5 = new OscP5(this, 0); // no need to listen to a port, this is a client not a server
     logicLocation = new NetAddress(ip, port);
   }
   
@@ -386,16 +386,16 @@ class LogicOsc
 }
 
 // ******************************************************************
-// This OSC client handles all communication from the fiducial tracker
+// This OSC server handles all communication from the fiducial tracker
 // ******************************************************************
-class FiducialOsc
+class FiducialOscServer
 {  
   OscP5 oscP5;
 
   // ============================================
   // Constructor
   // ============================================
-  public FiducialOsc(String ip, int port)
+  public FiducialOscServer(String ip, int port)
   {
     oscP5 = new OscP5(this, port);
     // Sample incoming message: /tuio/3Dobj set 0 3 0.408413 0.615067 0.106812 2.649051 0.823067 5.236993 0. 0. 0. 0. 0. 0. 0. 0.

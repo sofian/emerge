@@ -60,6 +60,6 @@ class Donut extends FCircle
       println("Target pos: [" + targetPosX + ";" + targetPosY + "]\nCurrentPos: [" + getX() + ";" + getY() + "]\nForces: [" + forceX + ";" + forceY + "]");
     }
     
-    logicClient.sendDonutPhysics(this);
+    oscLogic.sendDonutPhysics(this);
   }
 }
