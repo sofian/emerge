@@ -379,7 +379,7 @@ class LogicOscClient
     }
     else
     {
-      msg.add(false);
+      msg.add(0);
     }
     oscP5.send(msg, logicLocation);
   }
