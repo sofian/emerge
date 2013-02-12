@@ -4,10 +4,11 @@
 // ******************************************************************
 abstract class Thing extends FCircle implements Comparable<Thing>
 {
-  static final int RED   = 0;
-  static final int GREEN = 1;
-  static final int BLUE  = 2;
-  static final int WHITE = -1;
+  static final int RED    = 0;
+  static final int GREEN  = 1;
+  static final int BLUE   = 2;
+  static final int YELLOW = 3;
+  static final int WHITE  = -1;
   
   static final int N_NATIONS = 3;
   
@@ -22,16 +23,6 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   {
     super(size);
     setPosition(x, y);
-    setDamping(10.0f);
-    
-//    setDamping(BOT_DAMPING);
-//    setAngularDamping(BOT_ANGULAR_DAMPING);
-//    setFriction(10.0f);
-    setRestitution(1.0f);
-    setFillColor(getColor());
-    setNoStroke();
-//    setRotatable(true);
-    setDensity(1);
     setFillColor(getColor());
     setHeat(heat);
     this.nation = nation;
@@ -70,18 +61,15 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   // Member functions
   // ============================================ 
   abstract void step(World world);
-
-  void eat(Thing o)
-  {
-  }
   
   int nationToColor(int n)
   {
     switch (n) {
-      case RED:   return #ff0000;
-      case GREEN: return #00dd00;
-      case BLUE:  return #9999ff;
-      default:    return #ffffff;
+      case RED:    return #ff0000;
+      case GREEN:  return #00dd00;
+      case BLUE:   return #9999ff;
+      case YELLOW: return #ffffe0;
+      default:     return #ffffff;
     }
   }
   

@@ -2,7 +2,6 @@ class World extends FWorld {
   
   color backgroundColor;
   Vector<Thing> things;
-  PGraphics heatMap;
   PFont font = createFont("Arial",16,true); // Arial, 16 point, anti-aliasing on
 
   // This is a dynamic hash table of donuts identified by their ID
@@ -21,13 +20,6 @@ class World extends FWorld {
       donuts.put(i, d);
       super.add(d);
     }
-    
-    heatMap = createGraphics(WINDOW_WIDTH, WINDOW_HEIGHT);
-    heatMap.beginDraw();
-    heatMap.colorMode(GRAY, 1.0f);
-    heatMap.noStroke();
-    heatMap.background(HEAT_MAP_INITIAL_HEAT);
-    heatMap.endDraw();
   }
   
   void addThing(Thing t)
@@ -65,14 +57,6 @@ class World extends FWorld {
     oscLogic.sendBoothLogin(d, false);
   }
   
-  float getHeatAt(float x, float y)
-  {
-    x = constrain(x, 0, WINDOW_WIDTH-1);
-    y = constrain(y, 0, WINDOW_HEIGHT-1);
-    //println(red(heatMap.pixels[(int)x + ((int)y)*WINDOW_WIDTH]));
-    return (float) red(heatMap.pixels[(int)x + ((int)y)*WINDOW_WIDTH]) / 255.0f;
-  }
-  
   Vector<Thing> getThingsInArea(float x, float y, float radius)
   {
     Vector<Thing> inArea = new Vector<Thing>();
@@ -108,8 +92,7 @@ class World extends FWorld {
         }
       }
     }
-    
-    heatMap.beginDraw();
+
     Collections.sort(things);
     Collections.reverse(things); // sort from biggest to smallest
     
@@ -132,7 +115,6 @@ class World extends FWorld {
     if (cursorAction)
     {
       Vector<Thing> affectedThings = new Vector<Thing>();
-      heatMap.fill(DONUT_HEAT_INCREASE, HEAT_MAP_SPREAD_FACTOR);
             
       Iterator it = donuts.entrySet().iterator();
       while (it.hasNext())
@@ -141,7 +123,6 @@ class World extends FWorld {
         Donut val = (Donut)me.getValue();
         //println("Looking at donut with key " + me.getKey() + " and position X=" + val.posX + " Y=" + val.posY);
         affectedThings.addAll(getThingsInArea(val.getX(), val.getY(), val.getSize()/2));
-        heatMap.ellipse(val.getX(), val.getY(), val.getSize(), val.getSize());
         val.step(this);
       }      
       
@@ -151,66 +132,22 @@ class World extends FWorld {
       }
     }
     
-    heatMap.loadPixels();
-    
     for (Thing t : things)
     {      
       t.step(this);
-
-      final int HEAT_MAP_GRADIENT_STEPS = 10;
-      final float HEAT_MAP_GRADIENT_FACTOR = 1.0f / HEAT_MAP_GRADIENT_STEPS;
-      float heat      = t.getHeat();
-      float heatOnMap = getHeatAt(t.x(), t.y());
-      float deltaHeat = (heat - heatOnMap);
-      deltaHeat *= (deltaHeat >= 0 ? HEAT_MAP_DISSIPATION_FACTOR : HEAT_MAP_ABSORPTION_FACTOR);
-      t.setHeat( t.getHeat() - deltaHeat );
-      
-      //deltaHeat *= HEAT_MAP_SPREAD_FACTOR;
-      int traceSize = (int) ( t.size() * HEAT_TRACE_SIZE_FACTOR );
-      if (traceSize > 0)
-      {
-        heatMap.fill(t.getHeat(), HEAT_MAP_SPREAD_FACTOR);
-        heatMap.ellipse((int)t.x(), (int)t.y(), traceSize, traceSize);
-      }
     }
 
-    //heatMap.blendMode(REPLACE);
-    heatMap.fill(0.0f, HEAT_MAP_DECREASE_FACTOR);
-    heatMap.rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT);
-    //heatMap.filter(blur);
-
-    Vector<Thing> splitted = new Vector<Thing>();
-    Vector<Thing> dead     = new Vector<Thing>();
     for (Thing t: things)
     {
-      // Clean.
-      if (t.isDead())
-      {
-        dead.add(t);
-      }
-      
-      // Split.
-      else if (t instanceof Munchkin)
+      // Explode.
+      if (t instanceof Munchkin)
       {
         Munchkin m = (Munchkin) t;
-        if (m.size() <= 0)
+        if (m.size() >= 10 && random(0,1) < 0.05f)
         {
-          dead.add(t);
-        }
-        else if (m.getHeat() >= 0.9f && random(0,1) < 0.05f)
-        {
-          Thing s = m.split();
-          if (s != null)
-          {
-            splitted.add(s);
-          }
+          m.explode();
         }
       }
-    }
-
-    for (Thing t: splitted)
-    {
-      addThing(t);
     }
 
     // Make sure we respect boundaries.
@@ -218,8 +155,6 @@ class World extends FWorld {
     {
       t.setPosition( constrain(t.getX(), 5, width-5), constrain(t.getY(), 5, height-5) );
     }
-    
-    heatMap.endDraw();
     
     // Delete dead donuts
     Iterator it = donuts.entrySet().iterator();
@@ -239,7 +174,6 @@ class World extends FWorld {
   void draw()
   {
     background(backgroundColor);
-    //heatMap.blendMode(BLEND);
     textFont(font, 16);
     fill(255, 50);
     text("Booth " + BOOTHID, 20, 20);

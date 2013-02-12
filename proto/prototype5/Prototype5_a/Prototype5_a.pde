@@ -19,6 +19,13 @@ final int   N_MUNCHKINS = 0;
 final int   MUNCHKIN_INITIAL_SIZE = 5;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
 final int   N_QUALIA_AGENTS = 12;
+final float INTER_DONUT_FORCE_FARCTOR = 100;
+final int   INTER_DONUT_RADIUS   = 100;
+final float MUNCHKIN_OBSERVATION_RADIUS_FACTOR = 4;
+final float MUNCHKIN_RESTITUTION = 0.2f;
+final float MUNCHKIN_DAMPING     = 10.0f;
+final float MUNCHKIN_FRICTION    = 10.0f;
+final float MUNCHKIN_DENSITY     = 1.0f;
 
 // Donut related
 final int   N_DONUTS = 1; // 216
@@ -26,15 +33,6 @@ final float DONUT_CURSOR_FORCE_MULTIPLIER = 20.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
 final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
 final int   DONUT_IDLE_LIFETIME_MS = 5000; // idle time to allow before removing a donut 
-
-// Heat related
-final int     HEAT_MAP_GRADIENT_STEPS = 10;
-final float   HEAT_MAP_ABSORPTION_FACTOR = 0.1f; // proportion of heat absorbed by the munchkins when there is MORE heat in the map than in the munchkin
-final float   HEAT_MAP_DISSIPATION_FACTOR = 0.001f; // proportion of heat dissipated from the munchkins to the heat map when there is LESS heat in the map than in the munchkin
-final float   HEAT_MAP_SPREAD_FACTOR = 0.05f; // 
-final float   HEAT_ON_EAT = 0.05f;
-final float   HEAT_MAP_INITIAL_HEAT = 0.0f;
-final float   HEAT_TRACE_SIZE_FACTOR = 5.0f;
 
 // Heat decrease factors.
 //final float HEAT_MAP_DECREASE_FACTOR = 0.05f;
@@ -53,7 +51,7 @@ final int     TUIO_TAG_PORT            = 4444; // The port of the communication 
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
-final int OBSERVATION_DIM = 4;
+final int OBSERVATION_DIM = 9;
 //final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 

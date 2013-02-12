@@ -14,6 +14,18 @@ class Munchkin extends Thing
     super(nation, x, y, size, heat);
     this.nation = nation;
     setFillColor(getColor());
+
+    setDamping(MUNCHKIN_DAMPING);
+    setRestitution(MUNCHKIN_RESTITUTION);
+    setDensity(MUNCHKIN_DENSITY);
+    setFriction(MUNCHKIN_FRICTION);
+    
+//    setDamping(BOT_DAMPING);
+//    setAngularDamping(BOT_ANGULAR_DAMPING);
+//    setFriction(10.0f);
+    setFillColor(getColor());
+    setNoStroke();
+//    setRotatable(true);
   }
 
   Munchkin(int nation, float x, float y, float size)
@@ -49,29 +61,17 @@ class Munchkin extends Thing
   Vector<Thing> getNeighbors(World world, float radius)
   {
     Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
-//    try {
-//    things.removeElement(this);
-//    } catch (NoSuchElementException e) {}
+    if (things.contains(this)) {
+      try {
+      things.removeElement(this);
+      } catch (NoSuchElementException e) {}
+    }
     return things;
   }
   
   // ============================================
   // Member functions
   // ============================================ 
-  void eat(Thing o)
-  {
-    if (!o.isDead())
-    {
-      // Size transfer.
-      setSize(getSize() + 1);
-      o.setSize(o.getSize() - 1);
-      // Heat transfer.
-      float heatTransfer = min(o.getHeat(), HEAT_ON_EAT);
-      setHeat(getHeat() + heatTransfer - HEAT_DECREASE_ON_ACTION);
-      o.setHeat(o.getHeat() - heatTransfer);
-    }
-  }
-  
   void move(World world) {
     // Move.
     float RANDOM_FORCE_STRENGTH = getHeat() * 100.0f;
@@ -85,7 +85,8 @@ class Munchkin extends Thing
   void step(World world)
   {
     resetForces();
-    Vector<Thing> neighbors = getNeighbors(world, getActionRadius());
+    
+    Vector<Thing> neighbors = getNeighbors(world, INTER_DONUT_RADIUS);
 
     float neighborsStrength = 0;
     for (Thing n : neighbors)
@@ -95,9 +96,8 @@ class Munchkin extends Thing
 
       float d = distance(x(), y(), n.x(), n.y());
       
-      float g = (size() + n.size()) / (d*d+0.0000001f) * 1000; // gravitation force
-      //println(d + " " + g + " " + (n.x() - x()) / d * g);
-      addForce( (n.x() - x()) / d * g, (n.y() - y()) / d * g );
+      float g = (getMass() * n.getMass()) / (abs(d) + 1e-10f) * INTER_DONUT_FORCE_FARCTOR; // gravitation force
+      addForce( (n.x() - x()) * g, (n.y() - y()) * g );
     }
     
     if (neighborsStrength > size())
@@ -108,73 +108,18 @@ class Munchkin extends Thing
       {
         Thing n = it.next();
         neighborsStrength -= n.size();
-        n.eat(this);
       }
     }
     else
     {
-      eat(neighbors.firstElement());
+//      eat(neighbors.firstElement());
     }
     
     move(world);
   }
-
-  // Extra methods.
-  Munchkin split()
-  {
-    float angle = random(0, 2*PI);
-    float newSize = floor(size()/2);
-    int xInc = (int) (cos(angle)*newSize/2);
-    int yInc = (int) (sin(angle)*newSize/2);
-    xInc = min(xInc, 1);
-    yInc = min(yInc, 1);
-    float newHeat = getHeat() / 2 - HEAT_DECREASE_ON_ACTION;
-    setHeat(newHeat);
-    setSize(newSize);
-    Munchkin kid = new Munchkin(nation, constrain(x(), 10, width-10), constrain(y(), 10, height-10), newSize, newHeat);
-    addForce( xInc*2000, yInc*2000 );
-    kid.addForce( -xInc*2000, -yInc*2000 );
-    return kid;
+  
+  void explode() {
+    
   }
-
-  /*
-  void draw()
-  {
-    ellipseMode(CENTER);
-    noStroke();
-    fill(getColor());
-    stroke(getColor());
-    if (size == 0)
-    {
-      println("This thing should be dead.");
-    }
-    else if (size == 1)
-    {
-      noSmooth();
-      point(x, y);
-    }
-    else
-    {
-      smooth();
-      ellipse(x, y, size, size);
-    }
-  }*/
-
-  // Extra methods.
-  /*
-  Munchkin split()
-  {
-    float angle = random(0, 2*PI);
-    int newSize = size/2;
-    int xInc = (int) (cos(angle)*size*2);
-    int yInc = (int) (sin(angle)*size*2);
-    Munchkin kid = new Munchkin(nation, (int)(x-xInc), (int)(y-yInc), newSize);
-    x += xInc;
-    y += yInc;
-    size = newSize;
-    _constrain();
-    return kid;
-  }*/
-
  
 }
