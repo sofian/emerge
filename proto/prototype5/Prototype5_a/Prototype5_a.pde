@@ -124,16 +124,17 @@ void setup()
   else
   {
     println("Please launch " + (N_QUALIA_AGENTS-1) + " agents with ids " + ((BOOTHID-1)*N_QUALIA_AGENTS) + " to " + ((BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-2));
+
+    try
+    {
+      Thread.sleep(5000);
+    }
+    catch (InterruptedException e)
+    {
+      println(e);
+    }
   }
   
-  try
-  {
-    Thread.sleep(5000);
-  }
-  catch (InterruptedException e)
-  {
-    println(e);
-  }
     
   // Wait for init and start messages.
   // Wait for init().
