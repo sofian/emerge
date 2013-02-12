@@ -11,15 +11,16 @@ final float   ACTION_RADIUS_FACTOR = 2.0f;
 final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
 final color   WORLD_BACKGROUND_COLOR = #000000;
+final float   WORLD_EDGE_RESTITUTION = 1.0f;
 final boolean QUALIA_VERBOSE = false;
 final boolean DONUT_MOUSE_SIMULATION = false; // set to true if you want to simulate fiducial tracking by click-dragging your mouse cursor
 
 // Munchkin related
 final int   N_MUNCHKINS = 0;
-final int   MUNCHKIN_INITIAL_SIZE = 5;
+final int   MUNCHKIN_INITIAL_SIZE = 10;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
 final int   N_QUALIA_AGENTS = 12;
-final float INTER_DONUT_FORCE_FARCTOR = 100;
+final float INTER_DONUT_FORCE_FARCTOR = 200.0f;
 final int   INTER_DONUT_RADIUS   = 100;
 final float MUNCHKIN_OBSERVATION_RADIUS_FACTOR = 4;
 final float MUNCHKIN_RESTITUTION = 0.2f;
@@ -36,9 +37,11 @@ final int   DONUT_IDLE_LIFETIME_MS = 5000; // idle time to allow before removing
 
 // Heat decrease factors.
 //final float HEAT_MAP_DECREASE_FACTOR = 0.05f;
-final float   HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
-final float   HEAT_DECREASE = 0.0001f;
-final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
+//final float   HEAT_MAP_DECREASE_FACTOR = 1.0/255.0f;
+final float   HEAT_DECREASE = 0.0f;
+final float   HEAT_DECREASE_ON_ACTION = 0.0f;
+//final float   HEAT_DECREASE = 0.0001f;
+//final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
 final int     BOOTHID = 1;
 final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
@@ -51,7 +54,7 @@ final int     TUIO_TAG_PORT            = 4444; // The port of the communication 
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
-final int OBSERVATION_DIM = 9;
+final int OBSERVATION_DIM = 10;
 //final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 
@@ -85,6 +88,7 @@ void setup()
   world = new World(WORLD_BACKGROUND_COLOR);
   world.setEdges();
   world.setGravity(0, 0); // no x,y gravity
+  world.setEdgesRestitution(WORLD_EDGE_RESTITUTION);
 
   // The osc client and server for communication with Qualia
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));

@@ -169,7 +169,7 @@ class QualiaOscMunchkin extends Munchkin
 
       // Loners.
       case Thing.BLUE:
-        return baseReward + normalizedDistClosest;
+        return baseReward / 10 + normalizedDistClosest; // less influenced by wanting to stay in the center
 
       // Agressive.
       case Thing.YELLOW:
@@ -195,6 +195,7 @@ class QualiaOscMunchkin extends Munchkin
       yClosest / (float)height,
       distClosest / (float)width,
       sizeClosest / 30,
+      size() / 30,
 /*      size()/30,
       getHeat(),
       xClosest,

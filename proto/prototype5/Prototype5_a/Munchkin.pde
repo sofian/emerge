@@ -96,7 +96,7 @@ class Munchkin extends Thing
 
       float d = distance(x(), y(), n.x(), n.y());
       
-      float g = (getMass() * n.getMass()) / (abs(d) + 1e-10f) * INTER_DONUT_FORCE_FARCTOR; // gravitation force
+      float g = (getMass() * n.getMass()) / (d*d + 1e-10f) * INTER_DONUT_FORCE_FARCTOR; // gravitation force
       addForce( (n.x() - x()) * g, (n.y() - y()) * g );
     }
     
