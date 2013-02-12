@@ -52,8 +52,9 @@ class World extends FWorld {
     donuts.put(d.ID, d);
     super.add(d);
     println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
-    // Inform logic of donut logon at this booth
+    // Inform logic and sound of donut logon at this booth
     oscLogic.sendBoothLogin(d, true);
+    oscSound.sendBoothLogin(d, true);
   }
   
   void removeDonut(Donut d)
@@ -61,15 +62,15 @@ class World extends FWorld {
     super.remove(d);
     donuts.remove(d.ID);
     println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
-    // Inform logic of donut logout at this booth
+    // Inform logic and sound of donut logout at this booth
     oscLogic.sendBoothLogin(d, false);
+    oscSound.sendBoothLogin(d, false);
   }
   
   float getHeatAt(float x, float y)
   {
     x = constrain(x, 0, WINDOW_WIDTH-1);
     y = constrain(y, 0, WINDOW_HEIGHT-1);
-    //println(red(heatMap.pixels[(int)x + ((int)y)*WINDOW_WIDTH]));
     return (float) red(heatMap.pixels[(int)x + ((int)y)*WINDOW_WIDTH]) / 255.0f;
   }
   

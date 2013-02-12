@@ -61,5 +61,6 @@ class Donut extends FCircle
     }
     
     oscLogic.sendDonutPhysics(this);
+    oscSound.sendDonutPhysics(this);
   }
 }

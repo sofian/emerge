@@ -6,7 +6,7 @@ import java.util.*;
 // Window and overall environment
 final int     WINDOW_WIDTH  = 640;
 final int     WINDOW_HEIGHT = WINDOW_WIDTH*3/4;
-final int     FRAME_RATE = 60; // was 30
+final int     FRAME_RATE = 30;
 final float   ACTION_RADIUS_FACTOR = 2.0f;
 final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
@@ -46,10 +46,12 @@ final int     BOOTHID = 1;
 final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
 final int     QUALIA_OSC_BASE_PORT     = 11000 + (BOOTHID-1)*100; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
-final String  MAXMSP_LOGIC_IP          = "127.0.0.1"; // IP address of the machine consolidating the input from several booths
+final String  MAXMSP_LOGIC_IP          = "192.168.168.59"; // IP address of the machine consolidating the input from several booths
 final int     MAXMSP_LOGIC_PORT        = 10000;
 final String  TUIO_TAG_IP              = "127.0.0.1"; // IP address of the machine running the fiducial tracker
 final int     TUIO_TAG_PORT            = 4444; // The port of the communication from the fiducial tracker on this machine
+final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the sound system
+final int     SOUND_OSC_PORT           = 8877; // The port of the communication for the sound system
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
@@ -65,6 +67,7 @@ int[] humanControlledAction = new int[2];
 QualiaOsc osc; // OSC server & client for Qualia
 LogicOscClient oscLogic; // OSC client for the logic
 FiducialOscServer oscFiducials; // OSC client for fiducial tracking
+SoundOscClient oscSound; // OSC client for sound
 
 World    world;
 volatile boolean started = true;
@@ -92,6 +95,7 @@ void setup()
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
   oscLogic = new LogicOscClient(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
   oscFiducials = new FiducialOscServer(TUIO_TAG_IP, TUIO_TAG_PORT);
+  oscSound = new SoundOscClient(SOUND_OSC_IP, SOUND_OSC_PORT);
     
   // Launch the Qualia agents
   if (platform == WINDOWS)
@@ -201,6 +205,7 @@ void draw()
       {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         oscLogic.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
+        oscSound.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
