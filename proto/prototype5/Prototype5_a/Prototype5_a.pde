@@ -54,7 +54,7 @@ final int     TUIO_TAG_PORT            = 4444; // The port of the communication 
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
-final int OBSERVATION_DIM = 10;
+final int OBSERVATION_DIM = 11;
 //final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 

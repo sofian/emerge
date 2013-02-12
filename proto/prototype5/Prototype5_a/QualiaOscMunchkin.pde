@@ -8,15 +8,15 @@ class QualiaOscMunchkin extends Munchkin
   //float xHeat;
   //float yHeat;
   //float xSize;
-  //float ySize;  
-  float xClosest;
-  float yClosest;
+  //float ySize;
+  
+  // Influence = contribution to the force from closest neighbors in each quadrant
+  float influence[] = new float[4];
+  
+  // Distance of closest neighbor.
   float distClosest;
-  //float heatClosest;
-  float sizeClosest;
+
   boolean hasClosest = false;
-  boolean hasEaten = false;
-  boolean wasEaten = false;
   
   // ============================================
   // Constructors
@@ -60,37 +60,48 @@ class QualiaOscMunchkin extends Munchkin
   }
   
   void step(World world) {
-    hasEaten = wasEaten = false;
     super.step(world);
     
     float observationRadius = MUNCHKIN_OBSERVATION_RADIUS_FACTOR * getActionRadius();
     Vector<Thing> neighbors = getNeighbors(world, observationRadius);
     
+    // Init closest distances to max value.
+    float[] distClosestInQuadrant = new float[4];
+    for (int i=0; i<4; i++) {
+      distClosestInQuadrant[i] = width;
+      influence[i] = 0;
+    }
+    distClosest = width;
+
     if (neighbors.size() == 0)
     {
       hasClosest = false;
-      xClosest = (random(1.) < 0.5 ? -1 : +1) * observationRadius;
-      yClosest = (random(1.) < 0.5 ? -1 : +1) * observationRadius;
-      distClosest = 9999;
-      /*heatClosest = */sizeClosest = 0;
     }
     else
     {
       hasClosest = true;
-      distClosest = 9999;
       for (Thing t : neighbors)
       {
+        // Quadrant mappings:
+        // I  | II
+        // IV | III
+        int quadrant = (int) (t.y() <= height/2 ?
+                                (t.x() <= width/2 ? 0 : 1) :
+                                (t.x() >  width/2 ? 2 : 3));
+        
         float d = distance(x(), y(), t.x(), t.y());
-        if (d < distClosest)
+        
+        if (d < distClosestInQuadrant[quadrant])
         {
-          distClosest = d;
-          xClosest = t.x() - x();
-          yClosest = t.y() - y();
-          sizeClosest = t.size();
-          //heatClosest = t.getHeat();
+          distClosestInQuadrant[quadrant] = d;
+          influence[quadrant] = t.size() / (d*d + 1e-10f);
         }
       }
+      
     }
+    
+    for (int i=0; i<4; i++)
+      distClosest = min(distClosest, distClosestInQuadrant[i]);
 
 /*
     xHeat = 0;
@@ -161,15 +172,15 @@ class QualiaOscMunchkin extends Munchkin
 
       // Cuddlers.
       case Thing.RED:
-        return baseReward - normalizedDistClosest;
+        return baseReward + (1 - normalizedDistClosest*normalizedDistClosest);
       
       // Normal.
       case Thing.GREEN:
-        return baseReward - abs(normalizedDistClosest - 0.1);
+        return baseReward + (1 - abs(normalizedDistClosest - 0.1));
 
       // Loners.
       case Thing.BLUE:
-        return baseReward / 10 + normalizedDistClosest; // less influenced by wanting to stay in the center
+        return baseReward / 10 + normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
 
       // Agressive.
       case Thing.YELLOW:
@@ -191,10 +202,13 @@ class QualiaOscMunchkin extends Munchkin
       getVelocityY() /100,
       
       hasClosest ? 1.0f : 0.0f,
-      xClosest / (float)width,
-      yClosest / (float)height,
-      distClosest / (float)width,
-      sizeClosest / 30,
+      (hasClosest ? distClosest / (float)width : 1.0),
+      
+      influence[0],
+      influence[1],
+      influence[2],
+      influence[3],
+
       size() / 30,
 /*      size()/30,
       getHeat(),
@@ -205,6 +219,7 @@ class QualiaOscMunchkin extends Munchkin
 
       getReward()
     };
+    println(obs);
     if (obs.length-1 != OBSERVATION_DIM)
     {
       println("Wrong number of observations: " + obs.length);
