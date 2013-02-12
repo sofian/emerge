@@ -372,7 +372,8 @@ class LogicOscClient
   
   void sendBoothLogin(Donut d, boolean b)
   {
-    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/" + d.ID);
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/login");
+    msg.add(d.ID);
     if (b)
     {
       msg.add(1);
