@@ -6,7 +6,7 @@ import java.util.*;
 // Window and overall environment
 final int     WINDOW_WIDTH  = 640;
 final int     WINDOW_HEIGHT = WINDOW_WIDTH*3/4;
-final int     FRAME_RATE = 60; // was 30
+final int     FRAME_RATE = 30;
 final float   ACTION_RADIUS_FACTOR = 2.0f;
 final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
@@ -31,7 +31,8 @@ final float MUNCHKIN_DENSITY     = 1.0f;
 
 // Donut related
 final int   N_DONUTS = 1; // 216
-final float DONUT_CURSOR_FORCE_MULTIPLIER = 20.0f;
+final float DONUT_CURSOR_FORCE_MULTIPLIER = 500.0f;
+final float DONUT_CURSOR_DAMPING = 200.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
 final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
 final int   DONUT_IDLE_LIFETIME_MS = 5000; // idle time to allow before removing a donut 
@@ -48,10 +49,12 @@ final int     BOOTHID = 1;
 final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
 final int     QUALIA_OSC_BASE_PORT     = 11000 + (BOOTHID-1)*100; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
-final String  MAXMSP_LOGIC_IP          = "127.0.0.1"; // IP address of the machine consolidating the input from several booths
+final String  MAXMSP_LOGIC_IP          = "192.168.168.59"; // IP address of the machine consolidating the input from several booths
 final int     MAXMSP_LOGIC_PORT        = 10000;
 final String  TUIO_TAG_IP              = "127.0.0.1"; // IP address of the machine running the fiducial tracker
 final int     TUIO_TAG_PORT            = 4444; // The port of the communication from the fiducial tracker on this machine
+final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the sound system
+final int     SOUND_OSC_PORT           = 8877; // The port of the communication for the sound system
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
@@ -67,6 +70,7 @@ int[] humanControlledAction = new int[2];
 QualiaOsc osc; // OSC server & client for Qualia
 LogicOscClient oscLogic; // OSC client for the logic
 FiducialOscServer oscFiducials; // OSC client for fiducial tracking
+SoundOscClient oscSound; // OSC client for sound
 
 World    world;
 volatile boolean started = true;
@@ -95,6 +99,7 @@ void setup()
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
   oscLogic = new LogicOscClient(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
   oscFiducials = new FiducialOscServer(TUIO_TAG_IP, TUIO_TAG_PORT);
+  oscSound = new SoundOscClient(SOUND_OSC_IP, SOUND_OSC_PORT);
     
   // Launch the Qualia agents
   if (platform == WINDOWS)
@@ -109,7 +114,7 @@ void setup()
         actionParams += "," + String.valueOf(N_ACTIONS_XY);
       }
       
-      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
+      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
       //println(execParams);
       Process p = open(execParams);
       println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);

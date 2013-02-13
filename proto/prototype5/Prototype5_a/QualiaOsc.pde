@@ -431,3 +431,34 @@ class FiducialOscServer
     }
   }
 }
+
+// ******************************************************************
+// This class handles all OSC communication to the sound system
+// ******************************************************************
+class SoundOscClient extends LogicOscClient
+{
+  // ============================================
+  // Constructor
+  // ============================================
+  public SoundOscClient(String ip, int port)
+  {
+    super(ip, port);
+  }
+  
+  // ============================================
+  // Member functions
+  // ============================================ 
+  void sendBoothLogin(Donut d, boolean b)
+  {
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/" + d.ID);
+    if (b)
+    {
+      msg.add(1);
+    }
+    else
+    {
+      msg.add(0);
+    }
+    oscP5.send(msg, logicLocation);
+  }
+}

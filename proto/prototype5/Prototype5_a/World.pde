@@ -1,5 +1,5 @@
-class World extends FWorld {
-  
+class World extends FWorld
+{
   color backgroundColor;
   Vector<Thing> things;
   PFont font = createFont("Arial",16,true); // Arial, 16 point, anti-aliasing on
@@ -44,8 +44,9 @@ class World extends FWorld {
     donuts.put(d.ID, d);
     super.add(d);
     println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
-    // Inform logic of donut logon at this booth
+    // Inform logic and sound of donut logon at this booth
     oscLogic.sendBoothLogin(d, true);
+    oscSound.sendBoothLogin(d, true);
   }
   
   void removeDonut(Donut d)
@@ -92,7 +93,6 @@ class World extends FWorld {
         }
       }
     }
-
     Collections.sort(things);
     Collections.reverse(things); // sort from biggest to smallest
     

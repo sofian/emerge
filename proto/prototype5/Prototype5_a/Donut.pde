@@ -6,6 +6,8 @@ class Donut extends FCircle
   int ID;
   int targetPosX;
   int targetPosY;
+  int lastPosX;
+  int lastPosY;
   int msLastTargetPosition; // the time of the last target position
   
   // ============================================
@@ -52,8 +54,10 @@ class Donut extends FCircle
   void step(World world)
   {    
     // Approach the target position
-    float forceX = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosX-getX());
-    float forceY = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosY-getY());
+    float forceX = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosX-getX()) - DONUT_CURSOR_DAMPING * (lastPosX - getX());
+    float forceY = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosY-getY()) - DONUT_CURSOR_DAMPING * (lastPosY - getY());
+    lastPosX = (int)getX();
+    lastPosY = (int)getY();
     addForce(forceX, forceY);
     if (DONUT_VERBOSE)
     {
@@ -61,5 +65,6 @@ class Donut extends FCircle
     }
     
     oscLogic.sendDonutPhysics(this);
+    oscSound.sendDonutPhysics(this);
   }
 }
