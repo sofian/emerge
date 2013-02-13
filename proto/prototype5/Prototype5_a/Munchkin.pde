@@ -119,7 +119,17 @@ class Munchkin extends Thing
   }
   
   void explode() {
-    
+    float newSize = floor(size()/2);
+    float angle = random(0, 2*PI);
+    int xInc = (int) (cos(angle)*newSize/2);
+    int yInc = (int) (sin(angle)*newSize/2);
+    xInc = min(xInc, 1);
+    yInc = min(yInc, 1);
+    //print("SPLIT: " + xInc + "," + yInc);
+    addForce( xInc*1000, yInc*1000 );
+    //println(" --> " + getForceX() + "," + getForceY());
+    //setHeat(newHeat);
+    setSize(newSize);
   }
  
 }
