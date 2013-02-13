@@ -111,7 +111,7 @@ void setup()
         actionParams += "," + String.valueOf(N_ACTIONS_XY);
       }
       
-      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
+      String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
       //println(execParams);
       Process p = open(execParams);
       println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
