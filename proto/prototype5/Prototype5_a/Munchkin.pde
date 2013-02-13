@@ -86,7 +86,7 @@ class Munchkin extends Thing
   {
     resetForces();
     
-    Vector<Thing> neighbors = getNeighbors(world, INTER_DONUT_RADIUS);
+    Vector<Thing> neighbors = getNeighbors(world, MUNCHKIN_ATTRACTION_RADIUS);
 
     float neighborsStrength = 0;
     for (Thing n : neighbors)
@@ -96,7 +96,7 @@ class Munchkin extends Thing
 
       float d = distance(x(), y(), n.x(), n.y());
       
-      float g = (getMass() * n.getMass()) / (d*d + 1e-10f) * INTER_DONUT_FORCE_FARCTOR; // gravitation force
+      float g = (getMass() * n.getMass()) / (d*d + 1e-10f) * MUNCHKIN_ATTRACTION_FACTOR; // gravitation force
       addForce( (n.x() - x()) * g, (n.y() - y()) * g );
     }
     
