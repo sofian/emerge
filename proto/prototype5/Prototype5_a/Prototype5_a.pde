@@ -205,7 +205,6 @@ void draw()
       {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
         oscLogic.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
-        oscSound.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
       for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
