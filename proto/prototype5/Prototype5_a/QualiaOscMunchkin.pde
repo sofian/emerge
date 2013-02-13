@@ -186,7 +186,7 @@ class QualiaOscMunchkin extends Munchkin
       baseReward += 1.0f;
       
     float normalizedDistClosest = (hasClosest ? distClosest / (float)MUNCHKIN_OBSERVATION_RADIUS : 1.0);
-    println(normalizedDistClosest + " " + baseReward);
+    //println(normalizedDistClosest + " " + baseReward);
     
     switch (nation) {
 
@@ -232,7 +232,7 @@ class QualiaOscMunchkin extends Munchkin
 
       getReward()
     };
-    println(obs);
+    //println(obs);
     if (obs.length-1 != OBSERVATION_DIM)
     {
       println("Wrong number of observations: " + obs.length);
