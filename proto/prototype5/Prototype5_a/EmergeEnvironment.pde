@@ -71,12 +71,12 @@ class EmergeEnvironmentManager extends QualiaEnvironmentManager
     if (id % 2 == 0)
     {
       // Even munchkins have one behaviour
-      munchkin = new QualiaOscMunchkin(Thing.RED, (int)random(50,width/2), (int)random(50,height-50), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT);
+      munchkin = new QualiaOscMunchkin(Thing.RED, (int)random(50,width-50), (int)random(50,height-50), random(2, MUNCHKIN_INITIAL_SIZE), MUNCHKIN_INITIAL_HEAT);
     }
     else
     {
       // Odd munchkins have another behaviour
-      munchkin = new QualiaOscMunchkin(Thing.BLUE, (int)random(width/2,width-50), (int)random(50,height-50), MUNCHKIN_INITIAL_SIZE, MUNCHKIN_INITIAL_HEAT);
+      munchkin = new QualiaOscMunchkin(Thing.BLUE, (int)random(50,width-50), (int)random(50,height-50), random(2, MUNCHKIN_INITIAL_SIZE), MUNCHKIN_INITIAL_HEAT);
     }
     world.addThing(munchkin);
     println("Created munchking with ID " + id + " in booth " + BOOTHID);
