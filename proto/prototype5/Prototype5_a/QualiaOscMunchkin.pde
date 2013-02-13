@@ -59,10 +59,32 @@ class QualiaOscMunchkin extends Munchkin
     resetMoveForce();
   }
   
+  // Checks position of Thing relative to this and classifies it in one of the following quadrants:
+  //  \ 3  /
+  //   \  /
+  // 2  \/ 0
+  //    /\
+  //   /  \
+  //  / 1  \
+  int getRelativeQuadrant(Thing t) {
+    float diffX = t.x() - x();
+    float diffY = t.y() - y();
+    float angle = atan2(diffY, diffX);
+  
+    if (angle < -3*PI/4 || angle >= 3*PI/4)
+      return 2;
+    else if (angle < -PI/4)
+      return 3;
+    else if (angle < PI/4)
+      return 0;
+    else
+      return 1;
+  }
+  
   void step(World world) {
     super.step(world);
     
-    float observationRadius = MUNCHKIN_OBSERVATION_RADIUS_FACTOR * getActionRadius();
+    float observationRadius = MUNCHKIN_OBSERVATION_RADIUS;//MUNCHKIN_OBSERVATION_RADIUS_FACTOR * getActionRadius();
     Vector<Thing> neighbors = getNeighbors(world, observationRadius);
     
     // Init closest distances to max value.
@@ -85,16 +107,14 @@ class QualiaOscMunchkin extends Munchkin
         // Quadrant mappings:
         // I  | II
         // IV | III
-        int quadrant = (int) (t.y() <= height/2 ?
-                                (t.x() <= width/2 ? 0 : 1) :
-                                (t.x() >  width/2 ? 2 : 3));
+        int quadrant = getRelativeQuadrant(t);
         
         float d = distance(x(), y(), t.x(), t.y());
         
         if (d < distClosestInQuadrant[quadrant])
         {
           distClosestInQuadrant[quadrant] = d;
-          influence[quadrant] = t.size() / (d*d + 1e-10f);
+          influence[quadrant] = t.size() / (d*d + 1e-10f) * 1000;
         }
       }
       
@@ -165,22 +185,22 @@ class QualiaOscMunchkin extends Munchkin
     if (distCenter < 2*tooCloseToBorder)
       baseReward += 1.0f;
       
-    float normalizedDistClosest = (hasClosest ? distClosest / (float)width : 1.0);
+    float normalizedDistClosest = (hasClosest ? distClosest / (float)MUNCHKIN_OBSERVATION_RADIUS : 1.0);
     println(normalizedDistClosest + " " + baseReward);
     
     switch (nation) {
 
       // Cuddlers.
       case Thing.RED:
-        return baseReward + (1 - normalizedDistClosest*normalizedDistClosest);
+        return baseReward + 10*(1 - normalizedDistClosest*normalizedDistClosest);
       
       // Normal.
       case Thing.GREEN:
-        return baseReward + (1 - abs(normalizedDistClosest - 0.1));
+        return baseReward + 10*(1 - abs(normalizedDistClosest - 0.1));
 
       // Loners.
       case Thing.BLUE:
-        return baseReward / 10 + normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
+        return baseReward + 10*normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
 
       // Agressive.
       case Thing.YELLOW:
@@ -200,6 +220,7 @@ class QualiaOscMunchkin extends Munchkin
       map(y(), 0.0f, (float)height, -1., 1.),
       getVelocityX() /100,
       getVelocityY() /100,
+      size() / 30,
       
       hasClosest ? 1.0f : 0.0f,
       (hasClosest ? distClosest / (float)width : 1.0),
@@ -208,14 +229,6 @@ class QualiaOscMunchkin extends Munchkin
       influence[1],
       influence[2],
       influence[3],
-
-      size() / 30,
-/*      size()/30,
-      getHeat(),
-      xClosest,
-      yClosest,
-      heatClosest,
-      sizeClosest/30,*/
 
       getReward()
     };
@@ -228,21 +241,21 @@ class QualiaOscMunchkin extends Munchkin
     return obs;
   }
  
-  // Extra methods.
-  Munchkin split()
-  {
-    float newSize = floor(size()/2);
-    float newHeat = getHeat() / 2 - HEAT_DECREASE_ON_ACTION;
-    float angle = random(0, 2*PI);
-    int xInc = (int) (cos(angle)*newSize/2);
-    int yInc = (int) (sin(angle)*newSize/2);
-    xInc = min(xInc, 1);
-    yInc = min(yInc, 1);
-    //print("SPLIT: " + xInc + "," + yInc);
-    addForce( xInc*100, yInc*100 );
-    //println(" --> " + getForceX() + "," + getForceY());
-    setHeat(newHeat);
-    setSize(newSize);
-    return null;
-  }  
+  void draw(processing.core.PGraphics applet) {
+    super.draw(applet);
+    
+    // Uncomment to display influence information.
+    int fontSize = 10;
+    textSize(fontSize);
+    fill(#555555);
+    text(getReward(), (int)x() + 2, (int) y());
+/*    textAlign(LEFT);
+    text(influence[0], (int)x()+2, (int)y());
+    textAlign(CENTER);
+    text(influence[1], (int)x(), (int)y()+fontSize);
+    textAlign(RIGHT);
+    text(influence[2], (int)x()-2, (int)y());
+    textAlign(CENTER);
+    text(influence[3], (int)x(), (int)y()-fontSize);*/
+  }
 }
