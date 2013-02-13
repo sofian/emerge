@@ -1,10 +1,10 @@
-class World extends FWorld {
-  
+class World extends FWorld
+{
   color backgroundColor;
   Vector<Thing> things;
   PGraphics heatMap;
-  PFont font = createFont("Arial",16,true); // Arial, 16 point, anti-aliasing on
-
+  PFont font = createFont("Arial", 16, true); // Arial, 16 point, anti-aliasing on
+  
   // This is a dynamic hash table of donuts identified by their ID
   HashMap<Integer, Donut> donuts = new HashMap<Integer, Donut>();
 

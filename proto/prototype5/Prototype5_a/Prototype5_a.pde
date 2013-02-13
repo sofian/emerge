@@ -22,7 +22,8 @@ final int   N_QUALIA_AGENTS = 12;
 
 // Donut related
 final int   N_DONUTS = 1; // 216
-final float DONUT_CURSOR_FORCE_MULTIPLIER = 20.0f;
+final float DONUT_CURSOR_FORCE_MULTIPLIER = 500.0f;
+final float DONUT_CURSOR_DAMPING = 200.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
 final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
 final int   DONUT_IDLE_LIFETIME_MS = 5000; // idle time to allow before removing a donut 
@@ -110,7 +111,7 @@ void setup()
         actionParams += "," + String.valueOf(N_ACTIONS_XY);
       }
       
-      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
+      String[] execParams = { execFullPath, String.valueOf(i), "4", "2", "3,3", "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
       //println(execParams);
       Process p = open(execParams);
       println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
