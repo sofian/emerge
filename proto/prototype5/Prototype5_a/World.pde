@@ -3,6 +3,7 @@ class World extends FWorld
   color backgroundColor;
   Vector<Thing> things;
   PFont font = createFont("Arial",16,true); // Arial, 16 point, anti-aliasing on
+  Object lock = new Object();
 
   // This is a dynamic hash table of donuts identified by their ID
   HashMap<Integer, Donut> donuts = new HashMap<Integer, Donut>();
@@ -24,14 +25,20 @@ class World extends FWorld
   
   void addThing(Thing t)
   {
-    super.add(t);
-    things.add(t);
+    synchronized(lock)
+    {
+      super.add(t);
+      things.add(t);
+    }
   }
   
   void removeThing(Thing t)
   {
-    super.remove(t);
-    things.remove(t);
+    synchronized(lock)
+    {
+      super.remove(t);
+      things.remove(t);
+    }
   }
   
   Vector<Thing> getThings()
@@ -41,21 +48,27 @@ class World extends FWorld
   
   void addDonut(Donut d)
   {
-    donuts.put(d.ID, d);
-    super.add(d);
-    println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
-    // Inform logic and sound of donut logon at this booth
-    oscLogic.sendBoothLogin(d, true);
-    oscSound.sendBoothLogin(d, true);
+    synchronized(lock)
+    {
+      donuts.put(d.ID, d);
+      super.add(d);
+      println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
+      // Inform logic and sound of donut logon at this booth
+      oscLogic.sendBoothLogin(d, true);
+      oscSound.sendBoothLogin(d, true);
+    }
   }
   
   void removeDonut(Donut d)
   {
-    super.remove(d);
-    donuts.remove(d.ID);
-    println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
-    // Inform logic of donut logout at this booth
-    oscLogic.sendBoothLogin(d, false);
+    synchronized(lock)
+    {
+      super.remove(d);
+      donuts.remove(d.ID);
+      println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
+      // Inform logic of donut logout at this booth
+      oscLogic.sendBoothLogin(d, false);
+    }
   }
   
   Vector<Thing> getThingsInArea(float x, float y, float radius)
