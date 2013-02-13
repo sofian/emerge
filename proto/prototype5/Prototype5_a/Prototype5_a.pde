@@ -49,10 +49,12 @@ final int     BOOTHID = 1;
 final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
 final int     QUALIA_OSC_BASE_PORT     = 11000 + (BOOTHID-1)*100; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
-final String  MAXMSP_LOGIC_IP          = "127.0.0.1"; // IP address of the machine consolidating the input from several booths
+final String  MAXMSP_LOGIC_IP          = "192.168.168.59"; // IP address of the machine consolidating the input from several booths
 final int     MAXMSP_LOGIC_PORT        = 10000;
 final String  TUIO_TAG_IP              = "127.0.0.1"; // IP address of the machine running the fiducial tracker
 final int     TUIO_TAG_PORT            = 4444; // The port of the communication from the fiducial tracker on this machine
+final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the fiducial tracker
+final int     SOUND_OSC_PORT           = 8877; // The port of the communication from the fiducial tracker on this machine
 
 final int N_ACTIONS_XY = 3;
 final int ACTION_DIM = 2;
@@ -97,6 +99,7 @@ void setup()
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
   oscLogic = new LogicOscClient(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
   oscFiducials = new FiducialOscServer(TUIO_TAG_IP, TUIO_TAG_PORT);
+  oscSound = new SoundOscClient(SOUND_OSC_IP, SOUND_OSC_PORT);
     
   // Launch the Qualia agents
   if (platform == WINDOWS)
