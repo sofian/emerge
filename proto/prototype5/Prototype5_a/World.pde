@@ -2,8 +2,7 @@ class World extends FWorld
 {
   color backgroundColor;
   Vector<Thing> things;
-  PFont font = createFont("Arial",16,true); // Arial, 16 point, anti-aliasing on
-  Object lock = new Object();
+  PFont font = createFont("Arial", 16, true); // Arial, 16 point, anti-aliasing on
 
   // This is a dynamic hash table of donuts identified by their ID
   HashMap<Integer, Donut> donuts = new HashMap<Integer, Donut>();
@@ -25,7 +24,7 @@ class World extends FWorld
   
   void addThing(Thing t)
   {
-    synchronized(lock)
+    synchronized(things)
     {
       super.add(t);
       things.add(t);
@@ -34,7 +33,7 @@ class World extends FWorld
   
   void removeThing(Thing t)
   {
-    synchronized(lock)
+    synchronized(things)
     {
       super.remove(t);
       things.remove(t);
@@ -48,7 +47,7 @@ class World extends FWorld
   
   void addDonut(Donut d)
   {
-    synchronized(lock)
+    synchronized(donuts)
     {
       donuts.put(d.ID, d);
       super.add(d);
@@ -61,10 +60,10 @@ class World extends FWorld
   
   void removeDonut(Donut d)
   {
-    synchronized(lock)
+    synchronized(donuts)
     {
-      super.remove(d);
       donuts.remove(d.ID);
+      super.remove(d);
       println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
       // Inform logic of donut logout at this booth
       oscLogic.sendBoothLogin(d, false);
@@ -170,16 +169,19 @@ class World extends FWorld
     }
     
     // Delete dead donuts
-    Iterator it = donuts.entrySet().iterator();
-    while (it.hasNext())
+    synchronized(donuts)
     {
-      Map.Entry me = (Map.Entry)it.next();
-      Donut d = (Donut)me.getValue();
-      // Determine how long has elapsed since the last target position was received
-      int msElapsed = millis() - d.msLastTargetPosition;
-      if (msElapsed > DONUT_IDLE_LIFETIME_MS)
+      Iterator it = donuts.entrySet().iterator();
+      while (it.hasNext())
       {
-        removeDonut(d);
+        Map.Entry me = (Map.Entry)it.next();
+        Donut d = (Donut)me.getValue();
+        // Determine how long has elapsed since the last target position was received
+        int msElapsed = millis() - d.msLastTargetPosition;
+        if (msElapsed > DONUT_IDLE_LIFETIME_MS)
+        {
+          removeDonut(d);
+        }
       }
     }
   }
