@@ -62,13 +62,20 @@ class Donut extends FCircle implements Comparable<Donut>
     applet.fill(color(0, 0, 255, cursorAction ? 100 : 50));
     applet.smooth();
     applet.ellipse(getX(), getY(), getSize(), getSize());
+    applet.fill(color(255,0,0));
+    applet.ellipse(targetPosX, targetPosY, 10, 10);
   }
   
   void step(World world)
   {    
+//    resetForces();
     // Approach the target position
-    float forceX = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosX-getX()) - DONUT_CURSOR_DAMPING * (lastPosX - getX());
-    float forceY = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosY-getY()) - DONUT_CURSOR_DAMPING * (lastPosY - getY());
+    //float forceX = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosX-getX()) - DONUT_CURSOR_DAMPING * (lastPosX - getX());
+    //float forceY = DONUT_CURSOR_FORCE_MULTIPLIER * (targetPosY-getY()) - DONUT_CURSOR_DAMPING * (lastPosY - getY());
+    float dx = targetPosX-getX();
+    float dy = targetPosY-getY();
+    float forceX = DONUT_CURSOR_FORCE_MULTIPLIER * dx - DONUT_CURSOR_DAMPING * getVelocityX();
+    float forceY = DONUT_CURSOR_FORCE_MULTIPLIER * dy - DONUT_CURSOR_DAMPING * getVelocityY();
     lastPosX = (int)getX();
     lastPosY = (int)getY();
     addForce(forceX, forceY);
