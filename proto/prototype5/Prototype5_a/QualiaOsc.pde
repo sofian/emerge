@@ -423,7 +423,10 @@ class FiducialOscServer
       if (thisDonut == null)
       {
         thisDonut = new Donut(markerID);
-        thisDonut.setPosition(newX, newY);
+        float initialX = -10;
+        float initialY = random(1.0) * height;
+        thisDonut.setPosition(initialX, initialY);
+        thisDonut.setTargetPosition(newX, newY);
         world.addDonut(thisDonut);
       }
       else
