@@ -81,7 +81,9 @@ abstract class QualiaEnvironmentManager
     for (QualiaEnvironment e : instances.values())
 	{
       if (!e.marked())
+      {
         return false;
+      }
     }
     return true;
   }

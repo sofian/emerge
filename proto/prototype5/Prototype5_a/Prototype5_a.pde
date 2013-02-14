@@ -167,6 +167,7 @@ void setup()
     {
       println("Handling " + i);
       osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
+      Thread.sleep(10); // necessary on a slower machine
     }
   }
   catch (InterruptedException e)
@@ -217,6 +218,8 @@ void draw()
         osc.sendResponseStep(i, osc.getManager().get(i).getObservation());
       }
       
+      // Safe moment to remove the donuts marked for deletion
+      world.removeDonuts();      
     } catch (ConcurrentModificationException e) {
       for(;;) {
         try {

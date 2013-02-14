@@ -1,8 +1,9 @@
 class World extends FWorld
 {
   color backgroundColor;
-  Vector<Thing> things;
+  Vector<Thing> things = new Vector<Thing>();
   PFont font = createFont("Arial", 16, true); // Arial, 16 point, anti-aliasing on
+  Vector<Donut> donutsToRemove = new Vector<Donut>();
 
   // This is a dynamic hash table of donuts identified by their ID
   HashMap<Integer, Donut> donuts = new HashMap<Integer, Donut>();
@@ -10,7 +11,6 @@ class World extends FWorld
   World(color backgroundColor)
   {
     this.backgroundColor = backgroundColor;
-    things = new Vector<Thing>();
     
     if (DONUT_MOUSE_SIMULATION)
     {
@@ -67,6 +67,18 @@ class World extends FWorld
       println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
       // Inform logic of donut logout at this booth
       oscLogic.sendBoothLogin(d, false);
+    }
+  }
+  
+  void removeDonuts()
+  {
+    synchronized(donutsToRemove)
+    {
+      for (Donut d : donutsToRemove)
+      {
+        removeDonut(d);
+      }
+      donutsToRemove.clear();
     }
   }
   
@@ -180,7 +192,9 @@ class World extends FWorld
         int msElapsed = millis() - d.msLastTargetPosition;
         if (msElapsed > DONUT_IDLE_LIFETIME_MS)
         {
-          removeDonut(d);
+          // Add this donut to the list to be removed at a later time
+          donutsToRemove.add(d);
+          println("The donut with ID " + d.ID + " has been scheduled for deletion");
         }
       }
     }

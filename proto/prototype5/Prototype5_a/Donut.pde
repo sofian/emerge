@@ -1,7 +1,7 @@
 // ******************************************************************
 // This class represents a user-controlled agent, aka a donut.
 // ******************************************************************
-class Donut extends FCircle
+class Donut extends FCircle implements Comparable<Donut>
 {  
   int ID;
   int targetPosX;
@@ -42,6 +42,18 @@ class Donut extends FCircle
   // ============================================
   // Member functions
   // ============================================  
+  public int compareTo(Donut d)
+  {
+    if (d.ID == ID)
+    {
+      return 0;
+    }
+    else
+    {
+      return 1;
+    }
+  }
+  
   void draw(processing.core.PGraphics applet)
   {
     applet.ellipseMode(CENTER);
