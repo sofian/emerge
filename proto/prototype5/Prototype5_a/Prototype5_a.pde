@@ -324,3 +324,27 @@ void dispose()
   }
 }
 
+void contactStarted(FContact contact)
+{
+  try
+  {
+    Donut d1 = (Donut)contact.getBody1();
+    Donut d2 = (Donut)contact.getBody2();
+    if (d1 != null && d2 != null)
+    {
+      oscSound.sendDonutContact(d1, d2, contact.getX(), contact.getY());
+    }
+  }
+  //catch (InvocationTargetException e)
+  catch (Exception e)
+  {
+  }
+}
+
+void contactPersisted(FContact contact)
+{
+}
+
+void contactEnded(FContact contact)
+{
+}

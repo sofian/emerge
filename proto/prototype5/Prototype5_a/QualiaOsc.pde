@@ -466,4 +466,15 @@ class SoundOscClient extends LogicOscClient
     }
     oscP5.send(msg, logicLocation);
   }
+  
+  void sendDonutContact(Donut d1, Donut d2, float x, float y)
+  {
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/donutContact");
+    msg.add(d1.ID);
+    msg.add(d2.ID);
+    msg.add(x/width);
+    msg.add(y/height);
+    oscP5.send(msg, logicLocation);
+    //println("Contact between donuts " + d1.ID + " and " + d2.ID + " at " + x + ", " + y);
+  }
 }
