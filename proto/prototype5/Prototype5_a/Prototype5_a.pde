@@ -35,7 +35,9 @@ final float DONUT_CURSOR_FORCE_MULTIPLIER = 500.0f;
 final float DONUT_CURSOR_DAMPING = 200.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
 final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
-final int   DONUT_IDLE_LIFETIME_MS = 5000; // idle time to allow before removing a donut 
+final int   DONUT_IDLE_LIFETIME_MS = 30000; // idle time to allow before an untracked donut is removed
+final int   DONUT_THRESHOLD_LIFETIME_MS = 10000; // if the threshold count has been reached at this booth, send a logout message to the sound system
+final int   DONUT_THRESHOLD_COUNT = 10; // how many donuts at a booth before we send logoudle ones
 
 // Heat decrease factors.
 //final float HEAT_MAP_DECREASE_FACTOR = 0.05f;
@@ -46,11 +48,13 @@ final float   HEAT_DECREASE_ON_ACTION = 0.0f;
 //final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
 final int     BOOTHID = 1;
+final int     TOTAL_BOOTHS = 4;
 final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
 final int     QUALIA_OSC_BASE_PORT     = 11000 + (BOOTHID-1)*100; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
 final String  MAXMSP_LOGIC_IP          = "192.168.168.59"; // IP address of the machine consolidating the input from several booths
-final int     MAXMSP_LOGIC_PORT        = 10000;
+final int     MAXMSP_LOGIC_PORT_OUT    = 10000; // The port to use to send instructions to the logic server, and ultimately to the playback system
+final int     DONUT_LOGIN_PORT         = 10001; // The port to use to send/receive instructions related to donut logins at each booth
 final String  TUIO_TAG_IP              = "127.0.0.1"; // IP address of the machine running the fiducial tracker
 final int     TUIO_TAG_PORT            = 4444; // The port of the communication from the fiducial tracker on this machine
 final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the fiducial tracker
@@ -68,9 +72,9 @@ final boolean HUMAN_CONTROLLED_AGENT = false;
 int[] humanControlledAction = new int[2];
 
 QualiaOsc osc; // OSC server & client for Qualia
-LogicOscClient oscLogic; // OSC client for the logic
-FiducialOscServer oscFiducials; // OSC client for fiducial tracking
-SoundOscClient oscSound; // OSC client for sound
+LogicOscClientServer oscLogic; // send positions derived from fisica, receive login information from other booths
+FiducialOscClientServer oscFiducials; // send login information to other booths, receive TUIO fiducial information
+SoundOscClient oscSound; // send information to the sound system
 
 World    world;
 volatile boolean started = true;
@@ -97,8 +101,8 @@ void setup()
 
   // The osc client and server for communication with Qualia
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
-  oscLogic = new LogicOscClient(MAXMSP_LOGIC_IP, MAXMSP_LOGIC_PORT); 
-  oscFiducials = new FiducialOscServer(TUIO_TAG_IP, TUIO_TAG_PORT);
+  oscLogic = new LogicOscClientServer(MAXMSP_LOGIC_IP, DONUT_LOGIN_PORT, MAXMSP_LOGIC_PORT_OUT); 
+  oscFiducials = new FiducialOscClientServer(TUIO_TAG_IP, TUIO_TAG_PORT);
   oscSound = new SoundOscClient(SOUND_OSC_IP, SOUND_OSC_PORT);
     
   // Launch the Qualia agents

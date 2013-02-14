@@ -51,7 +51,6 @@ class World extends FWorld
     {
       donuts.put(d.ID, d);
       super.add(d);
-      println("Donut " + d.ID + " has just logged in at booth " + BOOTHID);
       // Inform logic and sound of donut logon at this booth
       oscLogic.sendBoothLogin(d, true);
       oscSound.sendBoothLogin(d, true);
@@ -64,7 +63,6 @@ class World extends FWorld
     {
       donuts.remove(d.ID);
       super.remove(d);
-      println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
       // Inform logic of donut logout at this booth
       oscLogic.sendBoothLogin(d, false);
     }
@@ -77,6 +75,7 @@ class World extends FWorld
       for (Donut d : donutsToRemove)
       {
         removeDonut(d);
+        println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
       }
       donutsToRemove.clear();
     }
@@ -180,7 +179,7 @@ class World extends FWorld
       t.setPosition( constrain(t.getX(), 5, width-5), constrain(t.getY(), 5, height-5) );
     }
     
-    // Delete dead donuts
+    // Remove idle donuts
     synchronized(donuts)
     {
       Iterator it = donuts.entrySet().iterator();
@@ -190,11 +189,20 @@ class World extends FWorld
         Donut d = (Donut)me.getValue();
         // Determine how long has elapsed since the last target position was received
         int msElapsed = millis() - d.msLastTargetPosition;
-        if (msElapsed > DONUT_IDLE_LIFETIME_MS)
+        if (msElapsed > DONUT_THRESHOLD_LIFETIME_MS)
         {
-          // Add this donut to the list to be removed at a later time
-          donutsToRemove.add(d);
-          println("The donut with ID " + d.ID + " has been scheduled for deletion");
+          if (donuts.size() > DONUT_THRESHOLD_COUNT && !d.soundLoggedOut)
+          {
+            d.soundLoggedOut = true;
+            // Tell the sound system that this donut should log out (the sound system keeps a max number of donut-related voices per booth)
+            oscSound.sendDonutThresholdLogout(d);
+          }
+          if (msElapsed > DONUT_IDLE_LIFETIME_MS)
+          {
+            // This donut should be removed
+            donutsToRemove.add(d);
+            println("The donut with ID " + d.ID + " has been scheduled for deletion");
+          }
         }
       }
     }

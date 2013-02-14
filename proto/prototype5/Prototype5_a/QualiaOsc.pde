@@ -331,25 +331,43 @@ class QualiaOsc
 }
 
 // ******************************************************************
-// This class handles all OSC communication to and from the logic patch in Max/MSP
+// This class listens (server) to OSC commands about donut logins at other booths
+// and sends (client) the position of things to the logic server (Max/MSP)
 // ******************************************************************
-class LogicOscClient
+class LogicOscClientServer
 {  
   OscP5 oscP5;
-  NetAddress logicLocation;  
+  NetAddress serverLocation;  
 
   // ============================================
   // Constructor
   // ============================================
-  public LogicOscClient(String ip, int port)
+  public LogicOscClientServer(String ip, int portIn, int portOut)
   {
-    oscP5 = new OscP5(this, 0); // no need to listen to a port, this is a client not a server
-    logicLocation = new NetAddress(ip, port);
+    oscP5 = new OscP5(this, portIn); // listen to instructions telling us that a donut has logged in somewhere else
+    // Sample incoming message: /booth1/donutLogin 2 3
+    oscP5.plug(this, "parseDonutLogin", "/booth" + BOOTHID + "/donutLogin");
+    serverLocation = new NetAddress(ip, portOut);
   }
   
   // ============================================
   // Member functions
   // ============================================ 
+  void parseDonutLogin(int donutID, int boothID)
+  {
+    if (boothID == BOOTHID)
+    {
+      // Ignore because donut login at the current booth should be handled by the fiducial server, not by information coming from the logic
+      return;
+    }
+    Donut d = world.donuts.get(donutID);
+    if (d != null)
+    {
+      world.donutsToRemove.add(d);
+      println("The donut with ID " + d.ID + " has been scheduled for deletion");
+    }
+  }
+  
   // NOTE: This should have been in EmergeQualiaOsc but the super() call doesn't work and I don't know why.
   void emergeSendMunchkinInfo(int id, Munchkin m)
   {
@@ -359,7 +377,7 @@ class LogicOscClient
     msg.add(m.y()/height);
     msg.add(m.size());
     msg.add(m.getHeat());
-    oscP5.send(msg, logicLocation);
+    oscP5.send(msg, serverLocation);
   }
 
   // Send the physics-based donut coordinates
@@ -369,7 +387,7 @@ class LogicOscClient
     msg.add(d.ID);
     msg.add(d.getX()/width);
     msg.add(d.getY()/height);
-    oscP5.send(msg, logicLocation);
+    oscP5.send(msg, serverLocation);
   }
   
   void sendBoothLogin(Donut d, boolean b)
@@ -384,23 +402,23 @@ class LogicOscClient
     {
       msg.add(0);
     }
-    oscP5.send(msg, logicLocation);
+    oscP5.send(msg, serverLocation);
   }
 }
 
 // ******************************************************************
-// This OSC server handles all communication from the fiducial tracker
-// ******************************************************************
-class FiducialOscServer
+// This class listens (server) to TUIO data from the fiducial tracker
+// and sends (client) donut login information to the other booths ******************************************************************
+class FiducialOscClientServer
 {  
   OscP5 oscP5;
 
   // ============================================
-  // Constructor
+  // Constructor: client port is DONUT_LOGIN_PORT
   // ============================================
-  public FiducialOscServer(String ip, int port)
+  public FiducialOscClientServer(String ip, int portIn)
   {
-    oscP5 = new OscP5(this, port);
+    oscP5 = new OscP5(this, portIn);
     // Sample incoming message: /tuio/3Dobj set 0 3 0.408413 0.615067 0.106812 2.649051 0.823067 5.236993 0. 0. 0. 0. 0. 0. 0. 0.
     oscP5.plug(this, "parseFiducialInput", "/tuio/3Dobj");
   }
@@ -428,10 +446,33 @@ class FiducialOscServer
         thisDonut.setPosition(initialX, initialY);
         thisDonut.setTargetPosition(newX, newY);
         world.addDonut(thisDonut);
+        println("Donut " + thisDonut.ID + " has just logged in to booth " + BOOTHID);
+        
+        // Inform the other booths of a login here, so they can log out the related donuts if they are at said booths
+        String prefix = "192.168.168.";
+        for (int i=1; i <= TOTAL_BOOTHS; i++)
+        {
+          if (i != BOOTHID)
+          {
+            String suffix = Integer.toString(200 + i);
+            String address = prefix + suffix;  
+            NetAddress toBooth = new NetAddress(address, DONUT_LOGIN_PORT); 
+            OscMessage msg = new OscMessage("/booth" + i + "/donutLogin");
+            msg.add(thisDonut.ID);
+            msg.add(BOOTHID);
+            oscP5.send(msg, toBooth);   
+            println("Sent login info to address: " + address + " as " + msg.addrPattern());
+          }
+        }       
       }
       else
       {
         thisDonut.setTargetPosition(newX, newY);
+        if (thisDonut.soundLoggedOut)
+        {
+          thisDonut.soundLoggedOut = false;
+          println("Donut " + thisDonut.ID + " has reappeared at booth " + BOOTHID + " after logging out from the sound system");
+        }
       }
     }
   }
@@ -440,14 +481,14 @@ class FiducialOscServer
 // ******************************************************************
 // This class handles all OSC communication to the sound system
 // ******************************************************************
-class SoundOscClient extends LogicOscClient
+class SoundOscClient extends LogicOscClientServer
 {
   // ============================================
   // Constructor
   // ============================================
-  public SoundOscClient(String ip, int port)
+  public SoundOscClient(String ip, int portOut)
   {
-    super(ip, port);
+    super(ip, 0, portOut);
   }
   
   // ============================================
@@ -464,7 +505,7 @@ class SoundOscClient extends LogicOscClient
     {
       msg.add(0);
     }
-    oscP5.send(msg, logicLocation);
+    oscP5.send(msg, serverLocation);
   }
   
   void sendDonutContact(Donut d1, Donut d2, float x, float y)
@@ -474,7 +515,15 @@ class SoundOscClient extends LogicOscClient
     msg.add(d2.ID);
     msg.add(x/width);
     msg.add(y/height);
-    oscP5.send(msg, logicLocation);
+    oscP5.send(msg, serverLocation);
     //println("Contact between donuts " + d1.ID + " and " + d2.ID + " at " + x + ", " + y);
+  }
+  
+  void sendDonutThresholdLogout(Donut d)
+  {
+    OscMessage msg = new OscMessage("/booth" + String.valueOf(BOOTHID) + "/donutLogout");
+    msg.add(d.ID);
+    oscP5.send(msg, serverLocation);
+    println("Donuts " + d.ID + " is being logged out from the sound system");
   }
 }

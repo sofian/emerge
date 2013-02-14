@@ -9,6 +9,7 @@ class Donut extends FCircle implements Comparable<Donut>
   int lastPosX;
   int lastPosY;
   int msLastTargetPosition; // the time of the last target position
+  boolean soundLoggedOut = false; // whether or not the donut has been logged out of the sound system
   
   // ============================================
   // Constructor
