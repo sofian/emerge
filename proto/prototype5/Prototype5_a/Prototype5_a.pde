@@ -6,7 +6,7 @@ import java.util.*;
 // Window and overall environment
 final int     WINDOW_WIDTH  = 640;
 final int     WINDOW_HEIGHT = WINDOW_WIDTH*3/4;
-final int     FRAME_RATE = 60; // was 30
+final int     FRAME_RATE = 30;
 final float   ACTION_RADIUS_FACTOR = 2.0f;
 final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
