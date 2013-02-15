@@ -70,7 +70,7 @@ final int ACTION_DIM = ATTRACTION_MODE ? 1 : 2;
 
 final int OBSERVATION_DIM = (ATTRACTION_MODE ? 5 : 11);
 //final int N_ACTIONS_PER_DIM = 100;
-final float ACTION_FORCE_FACTOR = 100.0f;
+final float ACTION_FORCE_FACTOR = 200.0f;
 final float ACTION_NOISE_FACTOR = ACTION_FORCE_FACTOR / 3;
 
 final int MAX_N_AGENTS = 100;
