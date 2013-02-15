@@ -96,6 +96,6 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   
   public String toString()
   {
-    return x() + " " + y() + " " + getForceX() + " " + getForceY();
+    return " ( " + x() + " " + y() + " " + getForceX() + " " + getForceY() + " )";
   }  
 }
