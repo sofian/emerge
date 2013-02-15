@@ -33,17 +33,27 @@ class EmergeEnvironment extends QualiaEnvironment
   
   void step(int[] action)
   {
-    if (id % 3 == 0 && QUALIA_VERBOSE)
+    if (id == 0 && QUALIA_VERBOSE)
     {
       println(id + " -> (" + action[0] + "," + action[1] + ")");
     }
-    float fx = map((float)action[0], 0, N_ACTIONS_PER_DIM-1, -1., +1.);
-    float fy = map((float)action[1], 0, N_ACTIONS_PER_DIM-1, -1., +1.);
-    munchkin.addMoveForce(fx, fy);
-    if (QUALIA_VERBOSE)
+    if (ATTRACTION_MODE)
     {
-      println( (munchkin.getNation() == Thing.RED ? "red" : "blue") + " := (" + fx + "," + fy + ") -> " +   munchkin.getReward());
+      munchkin.setAttracted(action[0] == 1);
     }
+    else
+    {
+      float fx = map((float)action[0], 0, N_ACTIONS_PER_DIM-1, -1., +1.);
+      float fy = map((float)action[1], 0, N_ACTIONS_PER_DIM-1, -1., +1.);
+      munchkin.addMoveForce(fx, fy);
+      
+      if (QUALIA_VERBOSE)
+      {
+        println( (munchkin.getNation() == Thing.RED ? "red" : "blue") + " := (" + fx + "," + fy + ") -> " +   munchkin.getReward());
+      }
+    }
+
+
   }
 }
 
