@@ -120,6 +120,8 @@ class Munchkin extends Thing
   
   void explode() {
     float newSize = floor(size()/2);
+    if (newSize > MUNCHKIN_MIN_SIZE)
+      newSize = random(MUNCHKIN_MIN_SIZE, newSize);
     float angle = random(0, 2*PI);
     int xInc = (int) (cos(angle)*newSize/2);
     int yInc = (int) (sin(angle)*newSize/2);

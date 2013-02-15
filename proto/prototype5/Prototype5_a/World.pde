@@ -166,9 +166,11 @@ class World extends FWorld
       if (t instanceof Munchkin)
       {
         Munchkin m = (Munchkin) t;
-        if (m.size() >= 10 && random(0,1) < 0.05f)
+        if (m.size() >= MUNCHKIN_EXPLODE_SIZE_THRESHOLD)
         {
-          m.explode();
+          float explodeProbability = (m.size() - MUNCHKIN_EXPLODE_SIZE_THRESHOLD) * MUNCHKIN_EXPLODE_BASE_PROBABILITY;
+          if (random(0,1) < explodeProbability)
+            m.explode();
         }
       }
     }

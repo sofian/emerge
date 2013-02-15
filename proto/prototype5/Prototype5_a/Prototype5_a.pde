@@ -17,7 +17,10 @@ final boolean DONUT_MOUSE_SIMULATION = false; // set to true if you want to simu
 
 // Munchkin related
 final int   N_MUNCHKINS = 0;
-final int   MUNCHKIN_INITIAL_SIZE = 10;
+final int   MUNCHKIN_MIN_SIZE = 5;
+final int   MUNCHKIN_INITIAL_MAX_SIZE = 10;
+final int   MUNCHKIN_EXPLODE_SIZE_THRESHOLD = 15;
+final float MUNCHKIN_EXPLODE_BASE_PROBABILITY = 0.01f;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
 final int   N_QUALIA_AGENTS = 12;
 final float MUNCHKIN_ATTRACTION_FACTOR = 200.0f;
