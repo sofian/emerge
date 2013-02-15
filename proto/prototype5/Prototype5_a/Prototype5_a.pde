@@ -65,6 +65,7 @@ final int ACTION_DIM = 2;
 final int OBSERVATION_DIM = 11;
 //final int N_ACTIONS_XY = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
+final float ACTION_NOISE_FACTOR = ACTION_FORCE_FACTOR / 3;
 
 final int MAX_N_AGENTS = 100;
 

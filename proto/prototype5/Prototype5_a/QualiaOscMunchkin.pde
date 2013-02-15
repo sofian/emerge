@@ -47,15 +47,18 @@ class QualiaOscMunchkin extends Munchkin
       resetForces();
     }
 
-    float heatFactor = getHeat() * getHeat() * 10;
+    //float heatFactor = getHeat() * getHeat() * 10;
     //print("FX FY : " + fx + " " + fy + " " + + heatFactor);
-    fx *= heatFactor;
-    fy *= heatFactor;
+    //fx *= heatFactor;
+    //fy *= heatFactor;
     //println("  --- > " + fx + " " + fy);
+    // Add some noise.
+    fx += random(-ACTION_NOISE_FACTOR, ACTION_NOISE_FACTOR);
+    fy += random(-ACTION_NOISE_FACTOR, ACTION_NOISE_FACTOR);
     addForce(fx, fy);
     //println(this);
-    float forceStrength = sqrt(fx*fx + fy*fy);
-    setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
+    //float forceStrength = sqrt(fx*fx + fy*fy);
+    //setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
     resetMoveForce();
   }
   
