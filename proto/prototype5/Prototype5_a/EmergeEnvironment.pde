@@ -37,8 +37,8 @@ class EmergeEnvironment extends QualiaEnvironment
     {
       println(id + " -> (" + action[0] + "," + action[1] + ")");
     }
-    float fx = map((float)action[0], 0, N_ACTIONS_XY-1, -1., +1.);
-    float fy = map((float)action[1], 0, N_ACTIONS_XY-1, -1., +1.);
+    float fx = map((float)action[0], 0, N_ACTIONS_PER_DIM-1, -1., +1.);
+    float fy = map((float)action[1], 0, N_ACTIONS_PER_DIM-1, -1., +1.);
     munchkin.addMoveForce(fx, fy);
     if (QUALIA_VERBOSE)
     {

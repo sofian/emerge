@@ -60,10 +60,10 @@ final int     TUIO_TAG_PORT            = 4444; // The port of the communication 
 final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the fiducial tracker
 final int     SOUND_OSC_PORT           = 8877; // The port of the communication from the fiducial tracker on this machine
 
-final int N_ACTIONS_XY = 3;
+final int N_ACTIONS_PER_DIM = 3;
 final int ACTION_DIM = 2;
 final int OBSERVATION_DIM = 11;
-//final int N_ACTIONS_XY = 100;
+//final int N_ACTIONS_PER_DIM = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 final float ACTION_NOISE_FACTOR = ACTION_FORCE_FACTOR / 3;
 
@@ -113,10 +113,10 @@ void setup()
     {
       String execFullPath = "C:/Qualia/QualiaOSC.exe";
       
-      String actionParams = String.valueOf(N_ACTIONS_XY);
+      String actionParams = String.valueOf(N_ACTIONS_PER_DIM);
       for (int j=1; j<ACTION_DIM; j++)
       {
-        actionParams += "," + String.valueOf(N_ACTIONS_XY);
+        actionParams += "," + String.valueOf(N_ACTIONS_PER_DIM);
       }
       
       String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
@@ -302,8 +302,8 @@ void keyPressed()
         case DOWN:  y++; break;
       }
     }
-    x = constrain(x, -N_ACTIONS_XY/2, +N_ACTIONS_XY/2+1);
-    y = constrain(y, -N_ACTIONS_XY/2, +N_ACTIONS_XY/2+1);
+    x = constrain(x, -N_ACTIONS_PER_DIM/2, +N_ACTIONS_PER_DIM/2+1);
+    y = constrain(y, -N_ACTIONS_PER_DIM/2, +N_ACTIONS_PER_DIM/2+1);
     humanControlledAction[0] = x;
     humanControlledAction[1] = y;
   }
