@@ -14,6 +14,7 @@ final color   WORLD_BACKGROUND_COLOR = #000000;
 final float   WORLD_EDGE_RESTITUTION = 1.0f;
 final boolean QUALIA_VERBOSE = false;
 final boolean DONUT_MOUSE_SIMULATION = false; // set to true if you want to simulate fiducial tracking by click-dragging your mouse cursor
+final boolean ATTRACTION_MODE = true;
 
 // Munchkin related
 final int   N_MUNCHKINS = 0;
@@ -23,8 +24,9 @@ final int   MUNCHKIN_EXPLODE_SIZE_THRESHOLD = 15;
 final float MUNCHKIN_EXPLODE_BASE_PROBABILITY = 0.01f;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
 final int   N_QUALIA_AGENTS = 12;
-final float MUNCHKIN_ATTRACTION_FACTOR = 200.0f;
-final int   MUNCHKIN_ATTRACTION_RADIUS   = 100;
+
+final float MUNCHKIN_ATTRACTION_FACTOR = (ATTRACTION_MODE ? 1e5f : 1000.0f);
+final int   MUNCHKIN_ATTRACTION_RADIUS   = (ATTRACTION_MODE ? 300 : 100);
 final float MUNCHKIN_OBSERVATION_RADIUS = 100;
 //final float MUNCHKIN_OBSERVATION_RADIUS_FACTOR = 4;
 final float MUNCHKIN_RESTITUTION = 0.2f;
@@ -63,9 +65,10 @@ final int     TUIO_TAG_PORT            = 4444; // The port of the communication 
 final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the fiducial tracker
 final int     SOUND_OSC_PORT           = 8877; // The port of the communication from the fiducial tracker on this machine
 
-final int N_ACTIONS_PER_DIM = 3;
-final int ACTION_DIM = 2;
-final int OBSERVATION_DIM = 11;
+final int N_ACTIONS_PER_DIM = ATTRACTION_MODE ? 2 : 3;
+final int ACTION_DIM = ATTRACTION_MODE ? 1 : 2;
+
+final int OBSERVATION_DIM = (ATTRACTION_MODE ? 5 : 11);
 //final int N_ACTIONS_PER_DIM = 100;
 final float ACTION_FORCE_FACTOR = 100.0f;
 final float ACTION_NOISE_FACTOR = ACTION_FORCE_FACTOR / 3;

@@ -212,18 +212,18 @@ class QualiaOscMunchkin extends Munchkin
     //println(normalizedDistClosest + " " + baseReward);
     
     switch (nation) {
-
+      
       // Cuddlers.
       case Thing.RED:
-        return baseReward + 100*(.5 - normalizedDistClosest*normalizedDistClosest);
+        return baseReward + 20*(.5 - normalizedDistClosest*normalizedDistClosest);
       
-      // Normal.
+      // Prudent.
       case Thing.GREEN:
-        return baseReward + 100*(.5 - abs(normalizedDistClosest - 0.1));
+        return baseReward + 20*(.5 - abs(normalizedDistClosest - 0.5));
 
       // Loners.
       case Thing.BLUE:
-        return baseReward + 100*normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
+        return baseReward + 10*normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
 
       // Agressive.
       case Thing.YELLOW:
@@ -245,24 +245,43 @@ class QualiaOscMunchkin extends Munchkin
   }
   
   float[] getObservation() {
-    float[] obs = new float[] {
+    float[] obs;
+   
+    if (ATTRACTION_MODE) {
+      obs = new float[] {
 
-      map(x(), 0.0f, (float)width, -1., 1.),
-      map(y(), 0.0f, (float)height, -1., 1.),
-      getVelocityX() /100,
-      getVelocityY() /100,
-      size() / 30,
-      
-      hasClosest ? 1.0f : 0.0f,
-      (hasClosest ? distClosest / (float)width : 1.0),
-      
-      influence[0],
-      influence[1],
-      influence[2],
-      influence[3],
+        map(x(), 0.0f, (float)width, -1., 1.),
+        map(y(), 0.0f, (float)height, -1., 1.),
+        size() / 30,
+        
+        hasClosest ? 1.0f : 0.0f,
+        (hasClosest ? distClosest / (float)width : 1.0),
+  
+        getReward()
+        
+      };
+    }
+    else {
+      obs = new float[] {
 
-      getReward()
-    };
+        map(x(), 0.0f, (float)width, -1., 1.),
+        map(y(), 0.0f, (float)height, -1., 1.),
+        getVelocityX() /100,
+        getVelocityY() /100,
+        size() / 30,
+        
+        hasClosest ? 1.0f : 0.0f,
+        (hasClosest ? distClosest / (float)width : 1.0),
+        
+        influence[0],
+        influence[1],
+        influence[2],
+        influence[3],
+  
+        getReward()
+        
+      };
+    }
     //println(obs);
     if (obs.length-1 != OBSERVATION_DIM)
     {
@@ -272,6 +291,15 @@ class QualiaOscMunchkin extends Munchkin
     return obs;
   }
  
+  int getColor()
+  {
+    colorMode(RGB);
+    if (attracted)
+      return #00ff00;
+    else
+      return #ff0000;
+  }
+
   void draw(processing.core.PGraphics applet) {
     super.draw(applet);
     

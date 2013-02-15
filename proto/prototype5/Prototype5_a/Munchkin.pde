@@ -6,6 +6,8 @@ class Munchkin extends Thing
   int nation;
   int size;
   
+  boolean attracted = true;
+  
   // ============================================
   // Constructors
   // ============================================
@@ -58,6 +60,10 @@ class Munchkin extends Thing
     return col;
   }
   
+  void setAttracted(boolean attracted) {
+    this.attracted = attracted;
+  }
+  
   Vector<Thing> getNeighbors(World world, float radius)
   {
     Vector<Thing> things =  world.getThingsInArea(x(), y(), radius);
@@ -73,13 +79,7 @@ class Munchkin extends Thing
   // Member functions
   // ============================================ 
   void move(World world) {
-    // Move.
-    float RANDOM_FORCE_STRENGTH = getHeat() * 100.0f;
-    float fx = random(-RANDOM_FORCE_STRENGTH,RANDOM_FORCE_STRENGTH);
-    float fy = random(-RANDOM_FORCE_STRENGTH,RANDOM_FORCE_STRENGTH);
-    addForce( fx, fy );
-    float forceStrength = sqrt(fx*fx + fy*fy);
-    setHeat(getHeat() - constrain(forceStrength, 0.0f, 1.0f) * HEAT_DECREASE_ON_ACTION);
+    println("Not supposed to be called.");
   }
 
   void step(World world)
@@ -88,31 +88,17 @@ class Munchkin extends Thing
     
     Vector<Thing> neighbors = getNeighbors(world, MUNCHKIN_ATTRACTION_RADIUS);
 
-    float neighborsStrength = 0;
     for (Thing n : neighbors)
     {
       if (n == this) continue;
-      neighborsStrength += n.size();
 
       float d = distance(x(), y(), n.x(), n.y());
       
       float g = (getMass() * n.getMass()) / (d*d + 1e-10f) * MUNCHKIN_ATTRACTION_FACTOR; // gravitation force
+      if (!attracted)
+        g = -g;
+
       addForce( (n.x() - x()) * g, (n.y() - y()) * g );
-    }
-    
-    if (neighborsStrength > size())
-    { // they eat me!
-      neighborsStrength -= size();
-      Iterator<Thing> it = neighbors.iterator();
-      while (it.hasNext() && neighborsStrength > 0)
-      {
-        Thing n = it.next();
-        neighborsStrength -= n.size();
-      }
-    }
-    else
-    {
-//      eat(neighbors.firstElement());
     }
     
     move(world);
