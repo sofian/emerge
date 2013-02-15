@@ -8,6 +8,9 @@ abstract class Thing extends FCircle implements Comparable<Thing>
   static final int GREEN  = 1;
   static final int BLUE   = 2;
   static final int YELLOW = 3;
+  static final int PURPLE = 4;
+  static final int ORANGE = 5;
+  
   static final int WHITE  = -1;
   
   static final int N_NATIONS = 3;
@@ -69,6 +72,8 @@ abstract class Thing extends FCircle implements Comparable<Thing>
       case GREEN:  return #00dd00;
       case BLUE:   return #9999ff;
       case YELLOW: return #ffffe0;
+      case PURPLE: return #9b30ff;
+      case ORANGE: return #ff3300;
       default:     return #ffffff;
     }
   }

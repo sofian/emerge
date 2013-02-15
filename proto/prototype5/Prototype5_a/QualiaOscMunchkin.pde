@@ -94,7 +94,10 @@ class QualiaOscMunchkin extends Munchkin
     float[] distClosestInQuadrant = new float[4];
     for (int i=0; i<4; i++) {
       distClosestInQuadrant[i] = width;
-      influence[i] = 0;
+      if (nation != Thing.PURPLE && nation != Thing.ORANGE)
+        influence[i] = 0;
+      else
+        influence[i] = 1;
     }
     distClosest = width;
 
@@ -117,7 +120,20 @@ class QualiaOscMunchkin extends Munchkin
         if (d < distClosestInQuadrant[quadrant])
         {
           distClosestInQuadrant[quadrant] = d;
-          influence[quadrant] = t.size() / (d*d + 1e-10f) * 1000;
+          
+          if (nation != Thing.PURPLE && nation != Thing.ORANGE)
+            influence[quadrant] = t.size() / (d*d + 1e-10f) * 1000;
+            
+          // Orange and Purple give more importance to neighbors being on the same "line" of influence
+          else {
+            float diff;
+            if (quadrant == 0 || quadrant == 2)           
+              diff = (t.y() - y()) / 50;
+            else           
+              diff = (t.x() - x()) / 50;
+            diff = min(diff, 1.0f);
+            influence[quadrant] = diff;
+          }
         }
       }
       
@@ -161,6 +177,10 @@ class QualiaOscMunchkin extends Munchkin
     this.fy += fy * ACTION_FORCE_FACTOR;
   }
   
+  float presence(int quadrant) {
+    return ((abs(influence[quadrant]) < 0.5f) ? 1.0f : 0.0f) * (2*(1-abs(influence[quadrant])));
+  }
+  
   // ============================================
   // Setters & getters
   // ============================================  
@@ -195,19 +215,27 @@ class QualiaOscMunchkin extends Munchkin
 
       // Cuddlers.
       case Thing.RED:
-        return baseReward + 10*(1 - normalizedDistClosest*normalizedDistClosest);
+        return baseReward + 100*(.5 - normalizedDistClosest*normalizedDistClosest);
       
       // Normal.
       case Thing.GREEN:
-        return baseReward + 10*(1 - abs(normalizedDistClosest - 0.1));
+        return baseReward + 100*(.5 - abs(normalizedDistClosest - 0.1));
 
       // Loners.
       case Thing.BLUE:
-        return baseReward + 10*normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
+        return baseReward + 100*normalizedDistClosest*normalizedDistClosest; // less influenced by wanting to stay in the center
 
       // Agressive.
       case Thing.YELLOW:
         return baseReward ;
+        
+      // Horizontal.
+      case Thing.PURPLE:
+        return baseReward + 100*( (presence(0) + presence(2) ) - ( presence(1) + presence(3) ) );
+      
+      // Vertical.
+      case Thing.ORANGE:
+        return baseReward + 100*( - (presence(0) + presence(2) ) + ( presence(1) + presence(3) ) );
 
       default:
         println("Wrong nation: " + nation);
@@ -251,14 +279,18 @@ class QualiaOscMunchkin extends Munchkin
     int fontSize = 10;
     textSize(fontSize);
     fill(#555555);
-    text(getReward(), (int)x() + 2, (int) y());
-/*    textAlign(LEFT);
-    text(influence[0], (int)x()+2, (int)y());
     textAlign(CENTER);
-    text(influence[1], (int)x(), (int)y()+fontSize);
+    text(getReward(), (int)x(), (int) y());
+
+/*    fill(#ff0000);
+    textAlign(LEFT);
+    text(influence[0] + " " + presence(0), (int)x() + 30, (int)y());
+    fill(#555555);
+    textAlign(CENTER);
+    text(influence[1] + " " + presence(1), (int)x(), (int)y()+fontSize);
     textAlign(RIGHT);
-    text(influence[2], (int)x()-2, (int)y());
+    text(influence[2] + " " + presence(2), (int)x() - 30, (int)y());
     textAlign(CENTER);
-    text(influence[3], (int)x(), (int)y()-fontSize);*/
+    text(influence[3] + " " + presence(3), (int)x(), (int)y()-fontSize);*/
   }
 }
