@@ -6,7 +6,7 @@ import java.util.*;
 // Window and overall environment
 final int     WINDOW_WIDTH  = 640;
 final int     WINDOW_HEIGHT = WINDOW_WIDTH*3/4;
-final int     FRAME_RATE = 60; // was 30
+final int     FRAME_RATE = 30;
 final float   ACTION_RADIUS_FACTOR = 2.0f;
 final float   ACTION_RADIUS_BASE   = 20.0f;
 final int     ACTION_COLOR = color(100, 50, 50, 100);
@@ -30,14 +30,14 @@ final int   MUNCHKIN_ATTRACTION_RADIUS   = (ATTRACTION_MODE ? 300 : 100);
 final float MUNCHKIN_OBSERVATION_RADIUS = 100;
 //final float MUNCHKIN_OBSERVATION_RADIUS_FACTOR = 4;
 final float MUNCHKIN_RESTITUTION = 0.2f;
-final float MUNCHKIN_DAMPING     = 10.0f;
+final float MUNCHKIN_DAMPING     = 30.0f;
 final float MUNCHKIN_FRICTION    = 10.0f;
 final float MUNCHKIN_DENSITY     = 1.0f;
 
 // Donut related
 final int   N_DONUTS = 1; // 216
-final float DONUT_CURSOR_FORCE_MULTIPLIER = 500.0f;
-final float DONUT_CURSOR_DAMPING = 200.0f;
+final float DONUT_CURSOR_FORCE_MULTIPLIER = 400.0f;
+final float DONUT_CURSOR_DAMPING = 100.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
 final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
 final int   DONUT_IDLE_LIFETIME_MS = 30000; // idle time to allow before an untracked donut is removed
