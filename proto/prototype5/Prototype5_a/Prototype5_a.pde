@@ -41,6 +41,9 @@ final int   N_DONUTS = 1; // 216
 final float DONUT_CURSOR_FORCE_MULTIPLIER = 400.0f;
 final float DONUT_CURSOR_DAMPING = 100.0f;
 final float DONUT_HEAT_INCREASE = 0.2f;
+final float DONUT_INITIAL_HEAT = 0.5f;
+final float DONUT_INITIAL_SIZE = 30;
+
 final boolean DONUT_VERBOSE = false; // set to true to display extra donut information
 final int   DONUT_IDLE_LIFETIME_MS = 30000; // idle time to allow before an untracked donut is removed
 final int   DONUT_THRESHOLD_LIFETIME_MS = 10000; // if the threshold count has been reached at this booth, send a logout message to the sound system

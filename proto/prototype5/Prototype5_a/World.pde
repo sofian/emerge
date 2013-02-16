@@ -50,7 +50,8 @@ class World extends FWorld
     synchronized(donuts)
     {
       donuts.put(d.ID, d);
-      super.add(d);
+      addThing(d);
+      //super.add(d);
       // Inform logic and sound of donut logon at this booth
       oscLogic.sendBoothLogin(d, true);
       oscSound.sendBoothLogin(d, true);

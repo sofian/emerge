@@ -1,7 +1,7 @@
 // ******************************************************************
 // This class represents a user-controlled agent, aka a donut.
 // ******************************************************************
-class Donut extends FCircle implements Comparable<Donut>
+class Donut extends Thing
 {  
   int ID;
   int targetPosX;
@@ -17,8 +17,7 @@ class Donut extends FCircle implements Comparable<Donut>
   Donut(int id)
   {
     // Initialize the position outside the range of this world
-    super(100);
-    setPosition(-200, 200);
+    super(Thing.WHITE, -200, 200, DONUT_INITIAL_SIZE, DONUT_INITIAL_HEAT);
     ID = id;
     targetPosX = 50;
     targetPosY = 50;
@@ -43,16 +42,12 @@ class Donut extends FCircle implements Comparable<Donut>
   // ============================================
   // Member functions
   // ============================================  
-  public int compareTo(Donut d)
+  public int compareTo(Thing d)
   {
-    if (d.ID == ID)
-    {
-      return 0;
-    }
+    if (d instanceof Donut)
+      return ((Donut)d).ID == ID ? 0 : 1;
     else
-    {
       return 1;
-    }
   }
   
   void draw(processing.core.PGraphics applet)
