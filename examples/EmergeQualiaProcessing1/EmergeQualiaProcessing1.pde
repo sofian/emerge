@@ -60,7 +60,7 @@ final float   HEAT_DECREASE_ON_ACTION = 0.0f;
 //final float   HEAT_DECREASE = 0.0001f;
 //final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
-final String  QUALIA_EXEC_FULL_PATH = "/home/tats/Documents/workspace/qualia/tests/osc/build/computer/main";
+final String  QUALIA_EXEC_FULL_PATH = null;
 final int     BOOTH_OSC_IN_PORT        = 12000; // This Processing patch listens to this port for instructions.
 final int     QUALIA_OSC_BASE_PORT     = 11000; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
@@ -90,8 +90,13 @@ Process[] procs = new Process[N_QUALIA_AGENTS];
 // ============================================
 void setup()
 {
+  if (QUALIA_EXEC_FULL_PATH == null) {
+    println("Please define QUALIA_EXEC_FULL_PATH to the full Qualia osc executable path (can be found in ${YOUR_QUALIA_DIR}/tests/osc/build/computer/main).");
+    exit();
+  }
+
   killQualia();
-  prepareExitHandler();
+  prepareExitHandler();  
   
   // NOTE: We can't use P2D because we need to make a loadPixels() in the Booth class and it makes everything very slow.
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
