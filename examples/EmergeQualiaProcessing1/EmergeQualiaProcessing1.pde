@@ -23,7 +23,6 @@ final boolean ATTRACTION_MODE = true;
 
 // Munchkin related
 final int   N_QUALIA_AGENTS = 12;
-final int   N_MUNCHKINS = 0; // deprecated
 final int   MUNCHKIN_MIN_SIZE = 5;
 final int   MUNCHKIN_INITIAL_MAX_SIZE = 10;
 final int   MUNCHKIN_EXPLODE_SIZE_THRESHOLD = 15;
