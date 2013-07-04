@@ -23,16 +23,14 @@ final int   MUNCHKIN_INITIAL_MAX_SIZE = 10;
 final int   MUNCHKIN_EXPLODE_SIZE_THRESHOLD = 15;
 final float MUNCHKIN_EXPLODE_BASE_PROBABILITY = 0.01f;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
-final int   N_QUALIA_OSC_AGENTS = 6;
-final int   N_QUALIA_BTREE_AGENTS = 6;
-final int   N_QUALIA_AGENTS = N_QUALIA_OSC_AGENTS + N_QUALIA_BTREE_AGENTS;
+final int   N_QUALIA_AGENTS = 12;
 
 final float MUNCHKIN_ATTRACTION_FACTOR = (ATTRACTION_MODE ? 1e5f : 1000.0f);
 final int   MUNCHKIN_ATTRACTION_RADIUS   = (ATTRACTION_MODE ? 300 : 100);
 final float MUNCHKIN_OBSERVATION_RADIUS = 100;
 //final float MUNCHKIN_OBSERVATION_RADIUS_FACTOR = 4;
 final float MUNCHKIN_RESTITUTION = 0.2f;
-final float MUNCHKIN_DAMPING     = 30.0f;
+final float MUNCHKIN_DAMPING     = 10.0f;
 final float MUNCHKIN_FRICTION    = 10.0f;
 final float MUNCHKIN_DENSITY     = 1.0f;
 
@@ -120,8 +118,7 @@ void setup()
   // Launch the Qualia agents
   if (platform == WINDOWS)
   {
-    // Start by launching required number of Qualia OSC agents
-    for (int i=(BOOTHID-1)*N_QUALIA_OSC_AGENTS; i<=(BOOTHID-1)*N_QUALIA_OSC_AGENTS+N_QUALIA_OSC_AGENTS-1; i++)
+    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
     {
       String execFullPath = "C:/Qualia/QualiaOSC.exe";
       
@@ -132,33 +129,9 @@ void setup()
       }
       
       String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
+      //println(execParams);
       Process p = open(execParams);
-      println("Booth " + BOOTHID + "\tLaunched Qualia reinforcement learning agent " + i);
-  
-      try
-      {
-        Thread.sleep(100);
-      }
-      catch (InterruptedException e)
-      {
-        println(e);
-      }
-    }
-    
-    // Then launch required number of Qualia behaviour tree agents
-    for (int i=(BOOTHID-1)*N_QUALIA_OSC_AGENTS+N_QUALIA_OSC_AGENTS; i<=(BOOTHID-1)*N_QUALIA_OSC_AGENTS+N_QUALIA_OSC_AGENTS + (BOOTHID-1)*N_QUALIA_BTREE_AGENTS+N_QUALIA_BTREE_AGENTS-1; i++)
-    {
-      String execFullPath = "C:/Qualia/QualiaBTree.exe";
-      
-      String actionParams = String.valueOf(N_ACTIONS_PER_DIM);
-      for (int j=1; j<ACTION_DIM; j++)
-      {
-        actionParams += "," + String.valueOf(N_ACTIONS_PER_DIM);
-      }
-      
-      String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
-      Process p = open(execParams);
-      println("Booth " + BOOTHID + "\tLaunched Qualia behaviour tree agent " + i);
+      println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
   
       try
       {
@@ -350,10 +323,8 @@ void killQualia()
   if (platform == WINDOWS)
   {
     println("Killing Qualia instances..."); 
-    String[] params1 = { "taskkill.exe", "/IM", "QualiaOSC.exe", "/F"};
-    open(params1);
-    String[] params2 = { "taskkill.exe", "/IM", "QualiaBTree.exe", "/F" };
-    open(params2);
+    String[] params = { "taskkill.exe", "/IM", "QualiaOSC.exe", "/F"};
+    open(params);
   }
 }
 
