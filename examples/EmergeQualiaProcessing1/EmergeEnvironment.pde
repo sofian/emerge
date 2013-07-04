@@ -89,7 +89,7 @@ class EmergeEnvironmentManager extends QualiaEnvironmentManager
       munchkin = new QualiaOscMunchkin(Thing.BLUE, (int)random(50,width-50), (int)random(50,height-50), random(MUNCHKIN_MIN_SIZE, MUNCHKIN_INITIAL_MAX_SIZE), MUNCHKIN_INITIAL_HEAT);
     }
     world.addThing(munchkin);
-    println("Created munchking with ID " + id + " in booth " + BOOTHID);
+    println("Created munchking with ID " + id);
   
     return new EmergeEnvironment(id, observationDim, actionDim, munchkin);
   }

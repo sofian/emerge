@@ -79,7 +79,5 @@ class Donut extends Thing
       println("Target pos: [" + targetPosX + ";" + targetPosY + "]\nCurrentPos: [" + getX() + ";" + getY() + "]\nForces: [" + forceX + ";" + forceY + "]");
     }
     
-    oscLogic.sendDonutPhysics(this);
-    oscSound.sendDonutPhysics(this);
   }
 }

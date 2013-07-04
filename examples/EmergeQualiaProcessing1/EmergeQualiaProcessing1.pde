@@ -1,3 +1,7 @@
+// ******************************************************************
+// This program is an example showing Qualia <-> Processing 
+// interaction through OSC channel
+// ******************************************************************
 import fisica.*;
 import oscP5.*;
 import netP5.*;
@@ -55,24 +59,14 @@ final float   HEAT_DECREASE_ON_ACTION = 0.0f;
 //final float   HEAT_DECREASE = 0.0001f;
 //final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
-final int     BOOTHID = 1;
-final int     TOTAL_BOOTHS = 4;
-final int     BOOTH_OSC_IN_PORT        = 12000 + (BOOTHID-1)*100; // This Processing patch listens to this port for instructions.
-final int     QUALIA_OSC_BASE_PORT     = 11000 + (BOOTHID-1)*100; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
+final int     BOOTH_OSC_IN_PORT        = 12000; // This Processing patch listens to this port for instructions.
+final int     QUALIA_OSC_BASE_PORT     = 11000; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
-final String  MAXMSP_LOGIC_IP          = "192.168.168.59"; // IP address of the machine consolidating the input from several booths
-final int     MAXMSP_LOGIC_PORT_OUT    = 10000; // The port to use to send instructions to the logic server, and ultimately to the playback system
-final int     DONUT_LOGIN_PORT         = 10001; // The port to use to send/receive instructions related to donut logins at each booth
-final String  TUIO_TAG_IP              = "127.0.0.1"; // IP address of the machine running the fiducial tracker
-final int     TUIO_TAG_PORT            = 4444; // The port of the communication from the fiducial tracker on this machine
-final String  SOUND_OSC_IP             = "192.168.168.215"; // IP address of the machine running the fiducial tracker
-final int     SOUND_OSC_PORT           = 8877; // The port of the communication from the fiducial tracker on this machine
 
 final int N_ACTIONS_PER_DIM = ATTRACTION_MODE ? 2 : 3;
 final int ACTION_DIM = ATTRACTION_MODE ? 1 : 2;
 
 final int OBSERVATION_DIM = (ATTRACTION_MODE ? 5 : 11);
-//final int N_ACTIONS_PER_DIM = 100;
 final float ACTION_FORCE_FACTOR = 200.0f;
 final float ACTION_NOISE_FACTOR = ACTION_FORCE_FACTOR / 3;
 
@@ -82,9 +76,6 @@ final boolean HUMAN_CONTROLLED_AGENT = false;
 int[] humanControlledAction = new int[2];
 
 QualiaOsc osc; // OSC server & client for Qualia
-LogicOscClientServer oscLogic; // send positions derived from fisica, receive login information from other booths
-FiducialOscClientServer oscFiducials; // send login information to other booths, receive TUIO fiducial information
-SoundOscClient oscSound; // send information to the sound system
 
 World    world;
 volatile boolean started = true;
@@ -111,14 +102,11 @@ void setup()
 
   // The osc client and server for communication with Qualia
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
-  oscLogic = new LogicOscClientServer(MAXMSP_LOGIC_IP, DONUT_LOGIN_PORT, MAXMSP_LOGIC_PORT_OUT); 
-  oscFiducials = new FiducialOscClientServer(TUIO_TAG_IP, TUIO_TAG_PORT);
-  oscSound = new SoundOscClient(SOUND_OSC_IP, SOUND_OSC_PORT);
     
   // Launch the Qualia agents
   if (platform == WINDOWS)
   {
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+    for (int i=0; i<N_QUALIA_AGENTS; i++)
     {
       String execFullPath = "C:/Qualia/QualiaOSC.exe";
       
@@ -131,7 +119,7 @@ void setup()
       String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
       //println(execParams);
       Process p = open(execParams);
-      println("Booth " + BOOTHID + "\tLaunched Qualia agent " + i);
+      println("Launched Qualia agent " + i);
   
       try
       {
@@ -145,7 +133,7 @@ void setup()
   }
   else
   {
-    println("Please launch " + (N_QUALIA_AGENTS-1) + " agents with ids " + ((BOOTHID-1)*N_QUALIA_AGENTS) + " to " + ((BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-2));
+    println("Please launch " + (N_QUALIA_AGENTS) + " agents with ids 0 to " + (N_QUALIA_AGENTS-1));
 
     try
     {
@@ -165,7 +153,7 @@ void setup()
     while (!osc.getManager().allMarked()) Thread.sleep(100);
     println("Init done");
     osc.getManager().unmarkAll();
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+    for (int i=0; i<N_QUALIA_AGENTS; i++)
     {
       osc.sendResponseInit(i);
     }
@@ -177,7 +165,7 @@ void setup()
     }
     println("Start done");
     osc.getManager().unmarkAll();
-    for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+    for (int i=0; i<N_QUALIA_AGENTS; i++)
     {
       println("Handling " + i);
       osc.sendResponseStart(i, osc.getManager().get(i).getObservation());
@@ -191,7 +179,7 @@ void setup()
   
   if (DONUT_MOUSE_SIMULATION)
   {
-    Donut cursorControlledDonut = world.donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+    Donut cursorControlledDonut = world.donuts.get(new Integer(0));
     cursorControlledDonut.setPosition(width/2, height/2);
     cursorControlledDonut.setTargetPosition(width/2, height/2);
   }
@@ -221,13 +209,12 @@ void draw()
       world.step();
       world.draw();
       
-      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+      for (int i=0; i<N_QUALIA_AGENTS; i++)
       {
         EmergeEnvironment env = (EmergeEnvironment)osc.getManager().get(i);
-        oscLogic.emergeSendMunchkinInfo(i, (Munchkin)env.getMunchkin());
       }
 
-      for (int i=(BOOTHID-1)*N_QUALIA_AGENTS; i<=(BOOTHID-1)*N_QUALIA_AGENTS+N_QUALIA_AGENTS-1; i++)
+      for (int i=0; i<N_QUALIA_AGENTS; i++)
       {
         osc.sendResponseStep(i, osc.getManager().get(i).getObservation());
       }
@@ -284,7 +271,7 @@ void circleGradient(PGraphics g, int x, int y, int size, float min, float max, f
 void mouseMoved() {
   if (DONUT_MOUSE_SIMULATION)
   {
-    Donut cursorControlledDonut = world.donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+    Donut cursorControlledDonut = world.donuts.get(new Integer(0));
     cursorControlledDonut.setTargetPosition(mouseX, mouseY);
   }
 }
@@ -346,7 +333,7 @@ void contactStarted(FContact contact)
     Donut d2 = (Donut)contact.getBody2();
     if (d1 != null && d2 != null)
     {
-      oscSound.sendDonutContact(d1, d2, contact.getX(), contact.getY());
+//      oscSound.sendDonutContact(d1, d2, contact.getX(), contact.getY());
     }
   }
   //catch (InvocationTargetException e)

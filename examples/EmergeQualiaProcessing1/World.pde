@@ -15,7 +15,7 @@ class World extends FWorld
     if (DONUT_MOUSE_SIMULATION)
     {
       // Prepopulate with one donut
-      int i = (BOOTHID-1)*N_QUALIA_AGENTS;
+      int i = 0;
       Donut d = new Donut(i);
       donuts.put(i, d);
       super.add(d);
@@ -51,10 +51,6 @@ class World extends FWorld
     {
       donuts.put(d.ID, d);
       addThing(d);
-      //super.add(d);
-      // Inform logic and sound of donut logon at this booth
-      oscLogic.sendBoothLogin(d, true);
-      oscSound.sendBoothLogin(d, true);
     }
   }
   
@@ -64,8 +60,6 @@ class World extends FWorld
     {
       donuts.remove(d.ID);
       super.remove(d);
-      // Inform logic of donut logout at this booth
-      oscLogic.sendBoothLogin(d, false);
     }
   }
   
@@ -76,7 +70,7 @@ class World extends FWorld
       for (Donut d : donutsToRemove)
       {
         removeDonut(d);
-        println("Donut " + d.ID + " has just logged out of booth " + BOOTHID);
+        println("Donut " + d.ID + " has just logged out");
       }
       donutsToRemove.clear();
     }
@@ -123,7 +117,7 @@ class World extends FWorld
     if (DONUT_MOUSE_SIMULATION)
     {
       // The cursor-controlled donut is the first donut of this booth
-      Donut cursorControlledDonut = donuts.get(new Integer((BOOTHID-1)*N_QUALIA_AGENTS));
+      Donut cursorControlledDonut = donuts.get(new Integer(0));
       if (cursorControlledDonut.getX() < 0 || cursorControlledDonut.getY() < 0)
       {
         println("Resetting donut position!");
@@ -198,7 +192,6 @@ class World extends FWorld
           {
             d.soundLoggedOut = true;
             // Tell the sound system that this donut should log out (the sound system keeps a max number of donut-related voices per booth)
-            oscSound.sendDonutThresholdLogout(d);
           }
           if (msElapsed > DONUT_IDLE_LIFETIME_MS)
           {
@@ -216,7 +209,6 @@ class World extends FWorld
     background(backgroundColor);
     textFont(font, 16);
     fill(255, 50);
-    text("Booth " + BOOTHID, 20, 20);
     
     //image(heatMap, 0, 0);
     Iterator it = donuts.entrySet().iterator();
