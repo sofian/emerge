@@ -6,6 +6,7 @@ import fisica.*;
 import oscP5.*;
 import netP5.*;
 import java.util.*;
+import java.lang.reflect.*;
 
 // Window and overall environment
 final int     WINDOW_WIDTH  = 640;
@@ -21,13 +22,13 @@ final boolean DONUT_MOUSE_SIMULATION = false; // set to true if you want to simu
 final boolean ATTRACTION_MODE = true;
 
 // Munchkin related
-final int   N_MUNCHKINS = 0;
+final int   N_QUALIA_AGENTS = 12;
+final int   N_MUNCHKINS = 0; // deprecated
 final int   MUNCHKIN_MIN_SIZE = 5;
 final int   MUNCHKIN_INITIAL_MAX_SIZE = 10;
 final int   MUNCHKIN_EXPLODE_SIZE_THRESHOLD = 15;
 final float MUNCHKIN_EXPLODE_BASE_PROBABILITY = 0.01f;
 final float MUNCHKIN_INITIAL_HEAT = 0.5f;
-final int   N_QUALIA_AGENTS = 12;
 
 final float MUNCHKIN_ATTRACTION_FACTOR = (ATTRACTION_MODE ? 1e5f : 1000.0f);
 final int   MUNCHKIN_ATTRACTION_RADIUS   = (ATTRACTION_MODE ? 300 : 100);
@@ -59,6 +60,7 @@ final float   HEAT_DECREASE_ON_ACTION = 0.0f;
 //final float   HEAT_DECREASE = 0.0001f;
 //final float   HEAT_DECREASE_ON_ACTION = 0.0001f;
 
+final String  QUALIA_EXEC_FULL_PATH = "/home/tats/Documents/workspace/qualia/tests/osc/build/computer/main";
 final int     BOOTH_OSC_IN_PORT        = 12000; // This Processing patch listens to this port for instructions.
 final int     QUALIA_OSC_BASE_PORT     = 11000; // The base port of the Qualia agents in this booth. As many ports as munchkins will be used.
 final String  QUALIA_OSC_IP            = "127.0.0.1"; // IP address of the machine running the Qualia agents
@@ -81,12 +83,15 @@ World    world;
 volatile boolean started = true;
 boolean       cursorAction = true;
 
+Process[] procs = new Process[N_QUALIA_AGENTS];
+
 // ============================================
 // Overall initialization
 // ============================================
 void setup()
 {
   killQualia();
+  prepareExitHandler();
   
   // NOTE: We can't use P2D because we need to make a loadPixels() in the Booth class and it makes everything very slow.
   size(WINDOW_WIDTH, WINDOW_HEIGHT);
@@ -104,47 +109,32 @@ void setup()
   osc = new QualiaOsc(MAX_N_AGENTS, BOOTH_OSC_IN_PORT, QUALIA_OSC_BASE_PORT, QUALIA_OSC_IP, new EmergeEnvironmentManager(world));
     
   // Launch the Qualia agents
-  if (platform == WINDOWS)
-  {
-    for (int i=0; i<N_QUALIA_AGENTS; i++)
+  for (int i=0; i<N_QUALIA_AGENTS; i++)
+  {    
+    String actionParams = String.valueOf(N_ACTIONS_PER_DIM);
+    for (int j=1; j<ACTION_DIM; j++)
     {
-      String execFullPath = "C:/Qualia/QualiaOSC.exe";
-      
-      String actionParams = String.valueOf(N_ACTIONS_PER_DIM);
-      for (int j=1; j<ACTION_DIM; j++)
-      {
-        actionParams += "," + String.valueOf(N_ACTIONS_PER_DIM);
-      }
-      
-      String[] execParams = { execFullPath, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-softmax", "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
-      //println(execParams);
-      Process p = open(execParams);
-      println("Launched Qualia agent " + i);
-  
-      try
-      {
-        Thread.sleep(100);
-      }
-      catch (InterruptedException e)
-      {
-        println(e);
-      }
+      actionParams += "," + String.valueOf(N_ACTIONS_PER_DIM);
     }
-  }
-  else
-  {
-    println("Please launch " + (N_QUALIA_AGENTS) + " agents with ids 0 to " + (N_QUALIA_AGENTS-1));
+    
+    String[] execParams = { QUALIA_EXEC_FULL_PATH, String.valueOf(i), String.valueOf(OBSERVATION_DIM), String.valueOf(ACTION_DIM), actionParams, "-port", String.valueOf(QUALIA_OSC_BASE_PORT), "-rport", String.valueOf(BOOTH_OSC_IN_PORT) };
+
+    // Launch process and record pid
+    // somehow open() refuses to work under Linux
+    procs[i] = (platform == WINDOWS ? open(execParams) : exec(execParams));
+    
+      
+    println("Launched Qualia agent " + i);
 
     try
     {
-      Thread.sleep(2500);
+      Thread.sleep(100);
     }
     catch (InterruptedException e)
     {
       println(e);
     }
   }
-  
     
   // Wait for init and start messages.
   // Wait for init().
@@ -305,24 +295,66 @@ void keyPressed()
   }
 }
 
-void killQualia()
+// Source: http://www.golesny.de/p/code/javagetpid
+int getUnixPID(Process process) throws Exception
 {
-  if (platform == WINDOWS)
+  if (process.getClass().getName().equals("java.lang.UNIXProcess"))
   {
-    println("Killing Qualia instances..."); 
-    String[] params = { "taskkill.exe", "/IM", "QualiaOSC.exe", "/F"};
-    open(params);
+    Class cl = process.getClass();
+    Field field = cl.getDeclaredField("pid");
+    field.setAccessible(true);
+    Object pidObject = field.get(process);
+    return (Integer) pidObject;
+  }
+  else
+  {
+    throw new IllegalArgumentException("Needs to be a UNIXProcess");
   }
 }
 
-void dispose()
+void killQualia()
 {
-  killQualia();
-  try {
-    Thread.sleep(500);
-  } catch (InterruptedException e) {
-    println(e);
+  println("Killing Qualia instances..."); 
+  if (platform == WINDOWS)
+  {
+    String[] params = { "taskkill.exe", "/IM", QUALIA_EXEC_FULL_PATH, "/F"};
+    open(params);
   }
+  else
+  {
+    for (int i=0; i<N_QUALIA_AGENTS; i++) 
+    {
+      // Try to send a SIGINT signal to the processes (they are meant to clean up nicely when receiving SIGINT)
+      if (procs[i] != null) 
+      {
+        try {
+          String[] sigintParams = {"kill", "-2", String.valueOf(getUnixPID(procs[i])) };
+          exec( sigintParams );
+        } catch (Exception e) {}
+      }
+    }
+
+    try {
+      Thread.sleep(500);
+    } catch (InterruptedException e) {
+      println(e);
+    }
+
+    for (int i=0; i<N_QUALIA_AGENTS; i++) 
+    {
+      // Try to destroy the processes.
+      if (procs[i] != null) 
+      {
+        procs[i].destroy(); // kill the process
+      }
+    }
+    
+    // Send a killall command.
+    String[] params = { "killall", QUALIA_EXEC_FULL_PATH };
+    exec(params);
+    exec(params); // I need to do it twice, don't know why       
+  }
+
 }
 
 void contactStarted(FContact contact)
@@ -348,4 +380,17 @@ void contactPersisted(FContact contact)
 
 void contactEnded(FContact contact)
 {
+}
+
+private void prepareExitHandler() {
+
+  Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+  
+    public void run() {
+      System.out.println("Shutdown");
+      killQualia();
+    }
+  
+  }));
+
 }
